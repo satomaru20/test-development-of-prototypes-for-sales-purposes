@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>履歴書・求人票取込画面</title>
+
+<style>
+body{
+    margin:0;
+    font-family:"Yu Gothic",sans-serif;
+    background:#f5f6f8;
+}
+
+.header{
+    background:#0f4c81;
+    color:white;
+    padding:20px;
+}
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.row{
+    display:flex;
+    gap:16px;
+}
+
+.col{
+    flex:1;
+}
+
+button{
+    background:#0f4c81;
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:10px 16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#093252;
+}
+
+button.secondary{
+    background:#198754;
+}
+
+button.secondary:hover{
+    background:#146c43;
+}
+
+button.gray{
+    background:#6c757d;
+}
+
+input[type="text"]{
+    width:100%;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+}
+
+th{
+    background:#f4f4f4;
+}
+
+.dropzone{
+    border:2px dashed #999;
+    padding:40px;
+    text-align:center;
+    border-radius:8px;
+}
+
+.preview{
+    min-height:250px;
+    border:1px solid #ddd;
+    background:#fafafa;
+    padding:10px;
+    white-space:pre-wrap;
+}
+
+.highlight{
+    background:#ffd4d4;
+    font-weight:bold;
+}
+
+.badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:4px;
+    margin-bottom:8px;
+}
+
+.badge-danger{
+    background:#ffdede;
+    color:#b00000;
+}
+
+.badge-info{
+    background:#dceeff;
+    color:#004c99;
+}
+
+.status{
+    background:#fff8dd;
+    border-left:5px solid #ffc107;
+    padding:10px;
+}
+
+#mailSection{
+    display:none;
+}
+
+@media(max-width:1000px){
+    .row{
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h2>履歴書・求人票取込画面</h2>
+    <div>
+        Outlookメール本文・添付ファイルから匿名化処理を実行
+    </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h3>取込種別</h3>
+
+<label>
+<input type="radio" name="docType" checked>
+履歴書
+</label>
+
+<label style="margin-left:20px;">
+<input type="radio" name="docType">
+求人票
+</label>
+
+</div>
+
+<div class="card">
+
+<h3>取込方法</h3>
+
+<button onclick="showFileMode()">
+ファイル取込
+</button>
+
+<button class="secondary"
+onclick="connectOutlook()">
+Outlookメール取込
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>ファイル取込</h3>
+
+<div class="dropzone">
+PDF / DOCX / XLSX / TXT
+
+<br><br>
+
+<input type="file" multiple>
+</div>
+
+</div>
+
+<div id="mailSection">
+
+<div class="card">
+
+<h3>Outlookメール取込</h3>
+
+<div class="status">
+Microsoft Graph API経由でメールを取得
+</div>
+
+<br>
+
+<label>件名検索</label>
+<input type="text" placeholder="Java、Azure、履歴書など">
+
+<br><br>
+
+<button onclick="loadMailList()">
+メール検索
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>受信メール一覧</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>選択</th>
+<th>受信日時</th>
+<th>件名</th>
+<th>添付</th>
+</tr>
+</thead>
+
+<tbody id="mailList">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col">
+
+<div class="card">
+
+<h3>メール本文プレビュー</h3>
+
+<div id="mailPreview" class="preview">
+
+メールを選択してください
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col">
+
+<div class="card">
+
+<h3>添付ファイル情報</h3>
+
+<div id="attachmentInfo">
+
+未選択
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>AI事前判定</h3>
+
+<table>
+
+<tr>
+<td>推定種別</td>
+<td id="typeResult">未判定</td>
+</tr>
+
+<tr>
+<td>PII候補</td>
+<td id="piiResult">-</td>
+</tr>
+
+<tr>
+<td>AI信頼度</td>
+<td id="aiResult">-</td>
+</tr>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<h3>検出候補</h3>
+
+<div id="candidateArea">
+未解析
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<button onclick="startImport()">
+匿名化処理開始
+</button>
+
+<button class="gray"
+onclick="showAttachment()">
+添付ファイルプレビュー
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const mails = [
+{
+    subject:"Javaエンジニア紹介",
+    date:"2026/11/06 10:15",
+    attach:"resume.pdf",
+    type:"履歴書",
+    pii:"4件",
+    conf:"98.4%",
+    body:`○○株式会社 採用担当です。
+
+氏名：山田太郎
+メール：sample@test.co.jp
+電話：090-1234-5678
+
+Java 5年
+Spring Boot 3年
+Azure 2年`
+},
+{
+    subject:"Azure案件紹介",
+    date:"2026/11/06 13:50",
+    attach:"job.xlsx",
+    type:"求人票",
+    pii:"2件",
+    conf:"96.1%",
+    body:`株式会社〇〇システムズ
+
+Azure基盤案件
+
+担当：田中
+電話：03-1234-5678
+
+単価：90万円`
+}
+];
+
+function connectOutlook(){
+
+document.getElementById("mailSection").style.display="block";
+
+alert(
+"Outlook接続成功（モック）\n\n" +
+"Microsoft Graph API経由でメールを取得します。"
+);
+
+loadMailList();
+
+}
+
+function loadMailList(){
+
+const tbody=document.getElementById("mailList");
+
+tbody.innerHTML="";
+
+mails.forEach((m,index)=>{
+
+tbody.innerHTML += `
+<tr>
+<td>
+<input type="radio"
+name="mail"
+onclick="selectMail(${index})">
+</td>
+<td>${m.date}</td>
+<td>${m.subject}</td>
+<td>${m.attach}</td>
+</tr>
+`;
+
+});
+
+}
+
+function selectMail(index){
+
+const mail=mails[index];
+
+let body=mail.body;
+
+body=body
+.replace("山田太郎",
+"<span class='highlight'>山田太郎</span>")
+.replace("sample@test.co.jp",
+"<span class='highlight'>sample@test.co.jp</span>")
+.replace("090-1234-5678",
+"<span class='highlight'>090-1234-5678</span>")
+.replace("株式会社〇〇システムズ",
+"<span class='highlight'>株式会社〇〇システムズ</span>")
+.replace("田中",
+"<span class='highlight'>田中</span>");
+
+document.getElementById("mailPreview").innerHTML=body;
+
+document.getElementById("attachmentInfo").innerHTML=`
+<b>${mail.attach}</b><br>
+形式判定: ${mail.attach.split(".")[1].toUpperCase()}<br>
+取り込み対象
+`;
+
+document.getElementById("typeResult").innerText=mail.type;
+document.getElementById("piiResult").innerText=mail.pii;
+document.getElementById("aiResult").innerText=mail.conf;
+
+if(mail.type==="履歴書"){
+
+document.getElementById("candidateArea").innerHTML=`
+<div class="badge badge-danger">氏名</div><br>
+<div class="badge badge-danger">メールアドレス</div><br>
+<div class="badge badge-danger">電話番号</div><br>
+<div class="badge badge-info">スキル情報</div>
+`;
+
+}
+else{
+
+document.getElementById("candidateArea").innerHTML=`
+<div class="badge badge-danger">企業名</div><br>
+<div class="badge badge-danger">担当者名</div><br>
+<div class="badge badge-info">案件情報</div>
+`;
+
+}
+
+}
+
+function startImport(){
+
+alert(
+"取り込み処理を開始しました。\n\n" +
+"Document Intelligence → PII検出 → 匿名化処理へ進みます。"
+);
+
+}
+
+function showAttachment(){
+
+alert(
+"実装時はDocument Intelligenceで解析した\n" +
+"添付ファイルのテキストプレビューを表示します。"
+);
+
+}
+
+</script>
+
+</body>
+</html>

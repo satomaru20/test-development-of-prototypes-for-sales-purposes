@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>AIマッチング</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:"Segoe UI","Yu Gothic",sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f4f6f9;
+}
+
+.header{
+    background:#1f4e79;
+    color:white;
+    padding:16px 24px;
+}
+
+.container{
+    padding:20px;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.job-item{
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:10px;
+    cursor:pointer;
+}
+
+.job-item:hover{
+    background:#eef5fc;
+}
+
+.job-item.active{
+    border-color:#1f4e79;
+    background:#dcecff;
+}
+
+.job-title{
+    font-weight:bold;
+}
+
+.filter{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+}
+
+.match-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.match-table th,
+.match-table td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
+
+.match-table th{
+    background:#eef3f9;
+}
+
+.score-high{
+    color:#198754;
+    font-weight:bold;
+}
+
+.score-mid{
+    color:#fd7e14;
+    font-weight:bold;
+}
+
+.score-low{
+    color:#dc3545;
+    font-weight:bold;
+}
+
+.badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:12px;
+    color:white;
+    font-size:12px;
+}
+
+.remote{
+    background:#198754;
+}
+
+.hybrid{
+    background:#fd7e14;
+}
+
+.office{
+    background:#0d6efd;
+}
+
+.reason{
+    font-size:12px;
+    color:#666;
+}
+
+@media(max-width:1000px){
+
+.layout{
+    grid-template-columns:1fr;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h2>求人・求職者 AIマッチング</h2>
+</div>
+
+<div class="container">
+
+<div class="layout">
+
+    <!-- 求人一覧 -->
+
+    <div>
+
+        <div class="card">
+
+            <h3>求人一覧</h3>
+
+            <div id="jobList"></div>
+
+        </div>
+
+    </div>
+
+    <!-- マッチング結果 -->
+
+    <div>
+
+        <div class="card">
+
+            <h3>求人詳細</h3>
+
+            <div id="jobDetail"></div>
+
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+
+            <div class="filter">
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="top10"
+                        checked>
+                    上位10件のみ
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="over80">
+                    80%以上のみ
+                </label>
+
+                <button onclick="renderMatches()">
+                    再表示
+                </button>
+
+            </div>
+
+            <h3>マッチング結果</h3>
+
+            <div id="matchCount"></div>
+
+            <br>
+
+            <table class="match-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>順位</th>
+
+                        <th>候補者ID</th>
+
+                        <th>一致率</th>
+
+                        <th>勤務条件</th>
+
+                        <th>推薦理由</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="matchBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+const jobs = [
+
+{
+ id:"J001",
+ title:"Java/Azure開発案件",
+ skills:["Java","Azure"],
+ workStyle:"ハイブリッド"
+},
+
+{
+ id:"J002",
+ title:"Azure基盤構築案件",
+ skills:["Azure","Terraform"],
+ workStyle:"フルリモート"
+},
+
+{
+ id:"J003",
+ title:"C#システム開発案件",
+ skills:["C#","SQL"],
+ workStyle:"出社"
+}
+
+];
+
+const candidates = [
+
+{
+ id:"C00001",
+ status:"未決定",
+ skills:["Java","Azure","Spring"],
+ workStyle:"ハイブリッド"
+},
+
+{
+ id:"C00002",
+ status:"未決定",
+ skills:["Azure","Terraform"],
+ workStyle:"フルリモート"
+},
+
+{
+ id:"C00003",
+ status:"未決定",
+ skills:["C#","SQL"],
+ workStyle:"出社"
+},
+
+{
+ id:"C00004",
+ status:"未決定",
+ skills:["Java","Oracle"],
+ workStyle:"出社"
+},
+
+{
+ id:"C00005",
+ status:"未決定",
+ skills:["Java","Azure"],
+ workStyle:"ハイブリッド"
+},
+
+{
+ id:"C00006",
+ status:"決定",
+ skills:["Java","Azure"],
+ workStyle:"ハイブリッド"
+}
+
+];
+
+let selectedJob = jobs[0];
+
+function score(job,candidate){
+
+ let result = 0;
+ let reasons = [];
+
+ const matched =
+ candidate.skills.filter(
+    x=>job.skills.includes(x)
+ );
+
+ result +=
+ (matched.length /
+ job.skills.length) * 80;
+
+ if(matched.length){
+
+    reasons.push(
+      "スキル一致: "
+      + matched.join(", ")
+    );
+ }
+
+ if(job.workStyle === candidate.workStyle){
+
+    result += 20;
+
+    reasons.push(
+      "勤務条件一致"
+    );
+ }
+
+ return {
+
+   score:
+      Math.round(result),
+
+   reason:
+      reasons.join(" / ")
+
+ };
+}
+
+function renderJobs(){
+
+ const area =
+ document.getElementById(
+    "jobList"
+ );
+
+ area.innerHTML = "";
+
+ jobs.forEach(job=>{
+
+   const div =
+   document.createElement(
+      "div"
+   );
+
+   div.className =
+      "job-item" +
+      (
+      selectedJob.id===job.id
+      ?
+      " active"
+      :
+      ""
+      );
+
+   div.innerHTML = `
+      <div class="job-title">
+         ${job.id}
+      </div>
+      <div>
+         ${job.title}
+      </div>
+   `;
+
+   div.onclick = ()=>{
+
+      selectedJob = job;
+
+      renderJobs();
+
+      renderMatches();
+   };
+
+   area.appendChild(div);
+
+ });
+
+}
+
+function renderMatches(){
+
+ document.getElementById(
+    "jobDetail"
+ ).innerHTML = `
+    <b>${selectedJob.title}</b>
+    <br><br>
+    必須スキル:
+    ${selectedJob.skills.join(", ")}
+    <br>
+    勤務条件:
+    ${selectedJob.workStyle}
+ `;
+
+ let result = candidates
+
+ .filter(
+   x=>x.status==="未決定"
+ )
+
+ .map(c=>{
+
+   const s =
+   score(
+     selectedJob,
+     c
+   );
+
+   return {
+     ...c,
+     score:s.score,
+     reason:s.reason
+   };
+
+ })
+
+ .sort(
+   (a,b)=>
+   b.score-a.score
+ );
+
+ if(
+   document.getElementById(
+   "over80"
+   ).checked
+ ){
+
+   result =
+   result.filter(
+      x=>x.score>=80
+   );
+ }
+
+ if(
+   document.getElementById(
+   "top10"
+   ).checked
+ ){
+
+   result =
+   result.slice(0,10);
+ }
+
+ document.getElementById(
+   "matchCount"
+ ).innerText =
+ `対象候補者 ${result.length}名`;
+
+ const tbody =
+ document.getElementById(
+   "matchBody"
+ );
+
+ tbody.innerHTML="";
+
+ result.forEach(
+ (row,index)=>{
+
+   let scoreClass =
+   "score-low";
+
+   if(row.score>=80)
+      scoreClass =
+      "score-high";
+
+   else if(row.score>=50)
+      scoreClass =
+      "score-mid";
+
+   let styleClass =
+   "office";
+
+   if(
+     row.workStyle ===
+     "ハイブリッド"
+   )
+      styleClass =
+      "hybrid";
+
+   if(
+     row.workStyle ===
+     "フルリモート"
+   )
+      styleClass =
+      "remote";
+
+   tbody.innerHTML += `
+   <tr>
+
+     <td>
+        ${index+1}
+     </td>
+
+     <td>
+        ${row.id}
+     </td>
+
+     <td class="${scoreClass}">
+        ${row.score}%
+     </td>
+
+     <td>
+        <span
+         class="badge ${styleClass}">
+         ${row.workStyle}
+        </span>
+     </td>
+
+     <td class="reason">
+        ${row.reason}
+     </td>
+
+   </tr>
+   `;
+ });
+
+}
+
+renderJobs();
+renderMatches();
+
+</script>
+
+</body>
+</html>

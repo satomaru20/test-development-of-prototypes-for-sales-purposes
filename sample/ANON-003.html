@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>匿名化品質判定</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:"Segoe UI","Yu Gothic",sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    color:#333;
+}
+
+.header{
+    background:#1f4e79;
+    color:white;
+    padding:20px 24px;
+}
+
+.container{
+    max-width:1400px;
+    margin:0 auto;
+    padding:24px;
+}
+
+.card{
+    background:white;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.score-panel{
+    text-align:center;
+    padding:30px;
+}
+
+.score-label{
+    color:#666;
+    margin-bottom:10px;
+}
+
+.score-value{
+    font-size:72px;
+    font-weight:bold;
+}
+
+.score-status{
+    margin-top:10px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.ok{
+    color:#198754;
+}
+
+.warning{
+    color:#fd7e14;
+}
+
+.ng{
+    color:#dc3545;
+}
+
+.rule-box{
+    background:#f8fafc;
+    border:1px solid #dce6f0;
+    padding:15px;
+    border-radius:8px;
+    margin-top:15px;
+}
+
+.rule-box ul{
+    margin-left:20px;
+}
+
+.alert-area{
+    border-left:6px solid #fd7e14;
+    background:#fff8e6;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+}
+
+.alert-area h3{
+    margin-bottom:10px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#eef3f9;
+}
+
+th,
+td{
+    padding:12px;
+    border:1px solid #ddd;
+    text-align:left;
+}
+
+.risk-high{
+    color:#dc3545;
+    font-weight:bold;
+}
+
+.risk-medium{
+    color:#fd7e14;
+    font-weight:bold;
+}
+
+.risk-low{
+    color:#198754;
+    font-weight:bold;
+}
+
+.action-area{
+
+    display:flex;
+    gap:12px;
+    margin-top:20px;
+    flex-wrap:wrap;
+
+}
+
+button{
+
+    border:none;
+    border-radius:8px;
+    padding:12px 20px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.btn-reanalyze{
+    background:#fd7e14;
+}
+
+.btn-mask{
+    background:#1f4e79;
+}
+
+.btn-approve{
+    background:#198754;
+}
+
+.info-grid{
+
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fit,minmax(250px,1fr));
+
+    gap:15px;
+}
+
+.info-card{
+
+    border:1px solid #e0e6ed;
+    border-radius:10px;
+    padding:16px;
+    background:#fafcff;
+}
+
+.info-title{
+    color:#666;
+    margin-bottom:6px;
+}
+
+.info-value{
+    font-size:22px;
+    font-weight:bold;
+}
+
+@media(max-width:768px){
+
+.score-value{
+    font-size:56px;
+}
+
+table{
+    display:block;
+    overflow-x:auto;
+}
+
+.action-area{
+    flex-direction:column;
+}
+
+button{
+    width:100%;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h2>匿名化品質判定</h2>
+</div>
+
+<div class="container">
+
+    <!-- KPI -->
+
+    <div class="card">
+
+        <div class="score-panel">
+
+            <div class="score-label">
+                匿名化品質スコア
+            </div>
+
+            <div
+                id="scoreValue"
+                class="score-value ok">
+
+                92
+
+            </div>
+
+            <div
+                id="scoreStatus"
+                class="score-status warning">
+
+                要確認
+
+            </div>
+
+        </div>
+
+        <div class="rule-box">
+
+            <strong>判定基準</strong>
+
+            <ul>
+
+                <li>
+                    95～100 ： OK
+                </li>
+
+                <li>
+                    90～94 ： 要確認
+                </li>
+
+                <li>
+                    89以下 ： NG
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+    <!-- サマリー -->
+
+    <div class="card">
+
+        <div class="info-grid">
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    検出PII件数
+                </div>
+
+                <div class="info-value">
+                    18
+                </div>
+
+            </div>
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    匿名化済み
+                </div>
+
+                <div class="info-value">
+                    16
+                </div>
+
+            </div>
+
+            <div class="info-card">
+
+                <div class="info-title">
+                    匿名化漏れ
+                </div>
+
+                <div class="info-value ng">
+                    2
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 警告 -->
+
+    <div class="alert-area">
+
+        <h3>
+            ⚠ 匿名化漏れを検出
+        </h3>
+
+        <p>
+            個人情報の匿名化漏れが検出されました。
+            登録前に確認してください。
+        </p>
+
+    </div>
+
+    <!-- 一覧 -->
+
+    <div class="card">
+
+        <h3>
+            匿名化漏れ一覧
+        </h3>
+
+        <br>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        種別
+                    </th>
+
+                    <th>
+                        検出文字列
+                    </th>
+
+                    <th>
+                        危険度
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>
+                        氏名
+                    </td>
+
+                    <td>
+                        山田太郎
+                    </td>
+
+                    <td class="risk-high">
+                        高
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        メールアドレス
+                    </td>
+
+                    <td>
+                        sample@example.co.jp
+                    </td>
+
+                    <td class="risk-high">
+                        高
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        電話番号
+                    </td>
+
+                    <td>
+                        090-XXXX-XXXX
+                    </td>
+
+                    <td class="risk-low">
+                        低
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+        <div class="action-area">
+
+            <button
+                class="btn-reanalyze">
+
+                再匿名化
+
+            </button>
+
+            <button
+                class="btn-mask">
+
+                手動マスキング
+
+            </button>
+
+            <button
+                class="btn-approve">
+
+                登録承認
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const score = 92;
+
+const scoreValue =
+document.getElementById(
+"scoreValue"
+);
+
+const scoreStatus =
+document.getElementById(
+"scoreStatus"
+);
+
+scoreValue.textContent = score;
+
+if(score >= 95){
+
+    scoreValue.className =
+        "score-value ok";
+
+    scoreStatus.className =
+        "score-status ok";
+
+    scoreStatus.textContent =
+        "OK";
+}
+else if(score >= 90){
+
+    scoreValue.className =
+        "score-value warning";
+
+    scoreStatus.className =
+        "score-status warning";
+
+    scoreStatus.textContent =
+        "要確認";
+}
+else{
+
+    scoreValue.className =
+        "score-value ng";
+
+    scoreStatus.className =
+        "score-status ng";
+
+    scoreStatus.textContent =
+        "NG";
+}
+
+</script>
+
+</body>
+</html>
