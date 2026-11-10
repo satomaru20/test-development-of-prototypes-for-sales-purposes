@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planner CMS - 案件管理</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI","Meiryo",sans-serif;
+}
+
+body{
+    background:#f4f6fb;
+    color:#333;
+}
+
+header{
+    background:#1e3a8a;
+    color:white;
+    padding:16px 24px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    padding:20px;
+}
+
+.tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.tab{
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#dbeafe;
+    color:#1e3a8a;
+    font-weight:bold;
+}
+
+.tab.active{
+    background:#2563eb;
+    color:white;
+}
+
+.card{
+    background:white;
+    padding:16px;
+    border-radius:10px;
+    margin-bottom:16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+input,
+select{
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+button{
+    cursor:pointer;
+}
+
+.btn{
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+}
+
+.primary{
+    background:#2563eb;
+    color:white;
+}
+
+.secondary{
+    background:#6b7280;
+    color:white;
+}
+
+.table-container{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    padding:12px;
+    border-bottom:1px solid #e5e7eb;
+    white-space:nowrap;
+}
+
+th{
+    background:#f8fafc;
+    cursor:pointer;
+    position:sticky;
+    top:0;
+}
+
+tr:hover{
+    background:#f8fafc;
+}
+
+.badge{
+    color:white;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.recruit{
+    background:#2563eb;
+}
+
+.interview{
+    background:#f59e0b;
+}
+
+.pending{
+    background:#6b7280;
+}
+
+.pass{
+    background:#10b981;
+}
+
+.activeProject{
+    background:#16a34a;
+}
+
+.extend{
+    background:#2563eb;
+}
+
+.leave{
+    background:#dc2626;
+}
+
+.priority-high{
+    color:#dc2626;
+    font-weight:bold;
+}
+
+.priority-middle{
+    color:#f59e0b;
+    font-weight:bold;
+}
+
+.priority-low{
+    color:#2563eb;
+    font-weight:bold;
+}
+
+.pagination{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    align-items:center;
+    margin-top:16px;
+}
+
+.detail{
+    display:none;
+}
+
+.detail.show{
+    display:block;
+}
+
+.detail-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:16px;
+}
+
+.label{
+    color:#666;
+    font-size:12px;
+}
+
+.value{
+    font-weight:bold;
+    margin-top:4px;
+}
+
+textarea{
+    width:100%;
+    min-height:120px;
+    border:1px solid #ddd;
+    border-radius:6px;
+    padding:10px;
+}
+
+@media(max-width:768px){
+
+    .filters{
+        flex-direction:column;
+    }
+
+    input,
+    select{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+Planner CMS - 募集案件 / 参画案件管理
+</header>
+
+<div class="container">
+
+<div class="tabs">
+    <button class="tab active" id="recruitTab">募集案件管理</button>
+    <button class="tab" id="assignTab">参画案件管理</button>
+</div>
+
+<div class="card">
+
+    <div class="filters">
+
+        <input type="text" id="keyword" placeholder="案件名・担当者検索">
+
+        <select id="statusFilter">
+        </select>
+
+        <button class="btn primary" onclick="render()">
+            検索
+        </button>
+
+        <button class="btn secondary" onclick="resetFilter()">
+            条件リセット
+        </button>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+<div class="table-container">
+
+<table>
+
+<thead>
+<tr id="thead"></tr>
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+
+</div>
+
+<div class="pagination">
+
+<button class="btn secondary" onclick="prevPage()">
+前へ
+</button>
+
+<span id="pageInfo"></span>
+
+<button class="btn secondary" onclick="nextPage()">
+次へ
+</button>
+
+</div>
+
+</div>
+
+<div class="card detail" id="detailCard">
+
+<h2 style="margin-bottom:20px;">
+案件詳細
+</h2>
+
+<div class="detail-grid" id="detailGrid"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let currentTab = "recruit";
+let currentPage = 1;
+const pageSize = 10;
+let sortColumn = "";
+let sortAsc = true;
+
+const recruitData = [
+
+{
+id:"R001",
+name:"金融システム刷新",
+status:"提案中",
+priority:"高",
+price:"80万円",
+location:"東京",
+interviews:"2回",
+match:"○"
+},
+{
+id:"R002",
+name:"生成AI開発",
+status:"面談",
+priority:"高",
+price:"100万円",
+location:"フルリモート",
+interviews:"1回",
+match:"○"
+},
+{
+id:"R003",
+name:"クラウド移行案件",
+status:"募集",
+priority:"中",
+price:"75万円",
+location:"札幌",
+interviews:"0回",
+match:"△"
+}
+
+];
+
+const assignData = [
+
+{
+id:"A001",
+name:"ECサイト開発",
+worker:"山田太郎",
+status:"参画中",
+startDate:"2026-01-01",
+endDate:"2027-03-31",
+location:"札幌",
+motivation:"高"
+},
+{
+id:"A002",
+name:"自治体DX",
+worker:"佐藤花子",
+status:"延長確認",
+startDate:"2025-12-01",
+endDate:"2026-12-31",
+location:"東京",
+motivation:"普通"
+},
+{
+id:"A003",
+name:"基幹システム刷新",
+worker:"田中一郎",
+status:"退場予定",
+startDate:"2025-05-01",
+endDate:"2026-11-30",
+location:"大阪",
+motivation:"低"
+}
+
+];
+
+function calcDuration(startDate){
+
+    let start = new Date(startDate);
+    let now = new Date();
+
+    let months =
+    (now.getFullYear() - start.getFullYear()) * 12
+    + (now.getMonth() - start.getMonth());
+
+    if(months < 0){
+        months = 0;
+    }
+
+    return months + "ヶ月";
+}
+
+function loadStatus(){
+
+    const statuses =
+    currentTab==="recruit"
+    ? ["","募集","本人確認中","提案中","面談","合否","保留"]
+    : ["","参画中","延長確認","退場予定"];
+
+    statusFilter.innerHTML="";
+
+    statuses.forEach(x=>{
+
+        let option=document.createElement("option");
+        option.value=x;
+        option.textContent=x || "すべて";
+
+        statusFilter.appendChild(option);
+
+    });
+
+}
+
+function getRows(){
+
+let rows =
+currentTab==="recruit"
+? recruitData
+: assignData.map(x=>({
+...x,
+duration:calcDuration(x.startDate)
+}));
+
+const keyword =
+document.getElementById("keyword").value.toLowerCase();
+
+const status =
+statusFilter.value;
+
+rows = rows.filter(row=>{
+
+const text =
+Object.values(row).join(" ").toLowerCase();
+
+return text.includes(keyword)
+&& (!status || row.status===status);
+
+});
+
+if(sortColumn){
+
+rows.sort((a,b)=>{
+
+const aa = a[sortColumn];
+const bb = b[sortColumn];
+
+if(sortAsc){
+
+return String(aa).localeCompare(String(bb));
+
+}
+
+return String(bb).localeCompare(String(aa));
+
+});
+
+}
+
+return rows;
+}
+
+function render(){
+
+const headers =
+currentTab==="recruit"
+? ["id","name","status","priority","location"]
+: ["id","name","worker","status","duration","endDate"];
+
+thead.innerHTML="";
+
+headers.forEach(h=>{
+
+const th=document.createElement("th");
+
+th.textContent=h;
+
+th.onclick=()=>{
+
+if(sortColumn===h){
+
+sortAsc=!sortAsc;
+
+}else{
+
+sortColumn=h;
+sortAsc=true;
+
+}
+
+render();
+
+};
+
+thead.appendChild(th);
+
+});
+
+const rows=getRows();
+
+const start=(currentPage-1)*pageSize;
+
+const pageRows=
+rows.slice(start,start+pageSize);
+
+tbody.innerHTML="";
+
+pageRows.forEach(row=>{
+
+const tr=document.createElement("tr");
+
+tr.onclick=()=>showDetail(row);
+
+headers.forEach(h=>{
+
+const td=document.createElement("td");
+
+if(h==="status"){
+
+let cls="badge ";
+
+if(currentTab==="recruit"){
+
+if(row.status==="募集") cls+="recruit";
+else if(row.status==="面談") cls+="interview";
+else if(row.status==="提案中") cls+="pass";
+else cls+="pending";
+
+}else{
+
+if(row.status==="参画中") cls+="activeProject";
+else if(row.status==="延長確認") cls+="extend";
+else cls+="leave";
+
+}
+
+td.innerHTML=
+`<span class="${cls}">${row.status}</span>`;
+
+}
+else if(h==="priority"){
+
+let cls="";
+
+if(row.priority==="高") cls="priority-high";
+if(row.priority==="中") cls="priority-middle";
+if(row.priority==="低") cls="priority-low";
+
+td.innerHTML=`<span class="${cls}">${row.priority}</span>`;
+
+}else{
+
+td.textContent=row[h];
+
+}
+
+tr.appendChild(td);
+
+});
+
+tbody.appendChild(tr);
+
+});
+
+pageInfo.textContent =
+`${currentPage} / ${Math.max(1,Math.ceil(rows.length/pageSize))}`;
+
+}
+
+function showDetail(row){
+
+detailCard.classList.add("show");
+
+let html="";
+
+for(let key in row){
+
+html += `
+<div>
+<div class="label">${key}</div>
+<div class="value">${row[key]}</div>
+</div>
+`;
+
+}
+
+html += `
+<div style="grid-column:1/-1;">
+<div class="label">備考</div>
+<textarea>
+案件に関するメモを記載できます。
+</textarea>
+</div>
+`;
+
+detailGrid.innerHTML=html;
+
+}
+
+function resetFilter(){
+
+keyword.value="";
+statusFilter.value="";
+currentPage=1;
+render();
+
+}
+
+function nextPage(){
+
+const max =
+Math.ceil(getRows().length/pageSize);
+
+if(currentPage<max){
+currentPage++;
+render();
+}
+}
+
+function prevPage(){
+
+if(currentPage>1){
+currentPage--;
+render();
+}
+}
+
+recruitTab.onclick = () => {
+
+currentTab="recruit";
+
+recruitTab.classList.add("active");
+assignTab.classList.remove("active");
+
+loadStatus();
+render();
+
+};
+
+assignTab.onclick = () => {
+
+currentTab="assign";
+
+assignTab.classList.add("active");
+recruitTab.classList.remove("active");
+
+loadStatus();
+render();
+
+};
+
+loadStatus();
+render();
+
+</script>
+
+</body>
+</html>
