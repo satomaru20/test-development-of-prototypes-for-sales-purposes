@@ -490,6 +490,7 @@ erDiagram
 ```
 
 # Azure SQL観点での推奨DBレイヤー構成
+```mermaid
 flowchart TB
 
     App["Planner CMS"]
@@ -511,3 +512,4 @@ flowchart TB
     RecruitDB --> AIHistory
 
     AssignDB --> NotificationDB
+```
