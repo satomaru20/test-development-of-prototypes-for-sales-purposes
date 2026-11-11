@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Planner CMS - 案件管理</title>
 
 <style>
+
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:"Segoe UI","Meiryo",sans-serif;
+    font-family:"Yu Gothic UI","Meiryo",sans-serif;
 }
 
 body{
-    background:#f4f6fb;
+    background:#f5f7fb;
     color:#333;
 }
 
@@ -30,6 +32,14 @@ header{
     padding:20px;
 }
 
+.card{
+    background:white;
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
 .tabs{
     display:flex;
     gap:10px;
@@ -37,12 +47,11 @@ header{
 }
 
 .tab{
-    padding:10px 20px;
     border:none;
-    border-radius:8px;
     cursor:pointer;
+    border-radius:8px;
+    padding:10px 20px;
     background:#dbeafe;
-    color:#1e3a8a;
     font-weight:bold;
 }
 
@@ -51,35 +60,45 @@ header{
     color:white;
 }
 
-.card{
-    background:white;
-    padding:16px;
-    border-radius:10px;
-    margin-bottom:16px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+.search-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:10px;
 }
 
-.filters{
+.status-toolbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.statusArea{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
 }
 
-input,
-select{
+.statusArea label{
+    background:#eef2ff;
+    border:1px solid #dbeafe;
+    border-radius:6px;
+    padding:5px 10px;
+}
+
+input[type=text]{
     padding:8px;
+    width:260px;
     border:1px solid #ccc;
     border-radius:6px;
 }
 
 button{
-    cursor:pointer;
-}
-
-.btn{
-    padding:8px 14px;
     border:none;
+    cursor:pointer;
     border-radius:6px;
+    padding:8px 14px;
 }
 
 .primary{
@@ -92,37 +111,30 @@ button{
     color:white;
 }
 
-.table-container{
-    overflow:auto;
-}
-
 table{
     width:100%;
     border-collapse:collapse;
 }
 
-th,
-td{
+th,td{
     padding:12px;
     border-bottom:1px solid #e5e7eb;
-    white-space:nowrap;
+    text-align:left;
 }
 
 th{
     background:#f8fafc;
     cursor:pointer;
-    position:sticky;
-    top:0;
 }
 
-tr:hover{
-    background:#f8fafc;
+tbody tr:hover{
+    background:#f9fafb;
 }
 
 .badge{
     color:white;
-    padding:4px 10px;
     border-radius:20px;
+    padding:4px 10px;
     font-size:12px;
 }
 
@@ -134,12 +146,12 @@ tr:hover{
     background:#f59e0b;
 }
 
-.pending{
-    background:#6b7280;
-}
-
 .pass{
     background:#10b981;
+}
+
+.pending{
+    background:#6b7280;
 }
 
 .activeProject{
@@ -154,26 +166,10 @@ tr:hover{
     background:#dc2626;
 }
 
-.priority-high{
-    color:#dc2626;
-    font-weight:bold;
-}
-
-.priority-middle{
-    color:#f59e0b;
-    font-weight:bold;
-}
-
-.priority-low{
-    color:#2563eb;
-    font-weight:bold;
-}
-
 .pagination{
     display:flex;
     justify-content:center;
     gap:10px;
-    align-items:center;
     margin-top:16px;
 }
 
@@ -188,7 +184,7 @@ tr:hover{
 .detail-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:16px;
+    gap:15px;
 }
 
 .label{
@@ -201,25 +197,22 @@ tr:hover{
     margin-top:4px;
 }
 
-textarea{
-    width:100%;
-    min-height:120px;
-    border:1px solid #ddd;
-    border-radius:6px;
-    padding:10px;
-}
-
 @media(max-width:768px){
 
-    .filters{
+    .search-row{
         flex-direction:column;
+        align-items:stretch;
     }
 
-    input,
-    select{
+    .status-toolbar{
+        flex-wrap:wrap;
+    }
+
+    input[type=text]{
         width:100%;
     }
 }
+
 </style>
 </head>
 
@@ -238,28 +231,54 @@ Planner CMS - 募集案件 / 参画案件管理
 
 <div class="card">
 
-    <div class="filters">
+    <!-- 検索行 -->
+    <div class="search-row">
+        <input
+            type="text"
+            id="keyword"
+            placeholder="案件名・作業者検索">
 
-        <input type="text" id="keyword" placeholder="案件名・担当者検索">
-
-        <select id="statusFilter">
-        </select>
-
-        <button class="btn primary" onclick="render()">
+        <button
+            class="primary"
+            onclick="render()">
             検索
         </button>
 
-        <button class="btn secondary" onclick="resetFilter()">
+        <button
+            class="secondary"
+            onclick="resetFilters()">
             条件リセット
         </button>
+    </div>
 
+    <!-- ボタン行 -->
+    <div
+        class="status-toolbar"
+        id="statusToolbar">
+
+        <button
+            class="secondary"
+            onclick="checkAll()">
+            全選択
+        </button>
+
+        <button
+            class="secondary"
+            onclick="uncheckAll()">
+            全解除
+        </button>
+
+    </div>
+
+    <!-- ステータス -->
+    <div
+        class="statusArea"
+        id="statusArea">
     </div>
 
 </div>
 
 <div class="card">
-
-<div class="table-container">
 
 <table>
 
@@ -271,31 +290,38 @@ Planner CMS - 募集案件 / 参画案件管理
 
 </table>
 
-</div>
-
 <div class="pagination">
 
-<button class="btn secondary" onclick="prevPage()">
-前へ
-</button>
+    <button
+        class="secondary"
+        onclick="prevPage()">
+        前へ
+    </button>
 
-<span id="pageInfo"></span>
+    <span id="pageInfo"></span>
 
-<button class="btn secondary" onclick="nextPage()">
-次へ
-</button>
+    <button
+        class="secondary"
+        onclick="nextPage()">
+        次へ
+    </button>
 
 </div>
 
 </div>
 
-<div class="card detail" id="detailCard">
+<div
+    class="card detail"
+    id="detailCard">
 
-<h2 style="margin-bottom:20px;">
-案件詳細
-</h2>
+    <h2>案件詳細</h2>
 
-<div class="detail-grid" id="detailGrid"></div>
+    <br>
+
+    <div
+        id="detailGrid"
+        class="detail-grid">
+    </div>
 
 </div>
 
@@ -303,357 +329,415 @@ Planner CMS - 募集案件 / 参画案件管理
 
 <script>
 
-let currentTab = "recruit";
-let currentPage = 1;
-const pageSize = 10;
-let sortColumn = "";
-let sortAsc = true;
+let currentTab="recruit";
+let page=1;
+const pageSize=10;
 
-const recruitData = [
+let sortColumn="";
+let sortAsc=true;
+
+const recruitStatuses=[
+"展開前",
+"募集",
+"本人確認中",
+"提案中",
+"面談",
+"合否",
+"保留",
+"見送り"
+];
+
+const recruitData=[
 
 {
 id:"R001",
 name:"金融システム刷新",
 status:"提案中",
 priority:"高",
-price:"80万円",
-location:"東京",
-interviews:"2回",
-match:"○"
+location:"東京"
 },
 {
 id:"R002",
 name:"生成AI開発",
 status:"面談",
 priority:"高",
-price:"100万円",
-location:"フルリモート",
-interviews:"1回",
-match:"○"
+location:"フルリモート"
 },
 {
 id:"R003",
 name:"クラウド移行案件",
 status:"募集",
 priority:"中",
-price:"75万円",
-location:"札幌",
-interviews:"0回",
-match:"△"
+location:"札幌"
+},
+{
+id:"R004",
+name:"自治体DX",
+status:"本人確認中",
+priority:"低",
+location:"仙台"
 }
 
 ];
 
-const assignData = [
+const assignData=[
 
 {
 id:"A001",
 name:"ECサイト開発",
 worker:"山田太郎",
 status:"参画中",
-startDate:"2026-01-01",
-endDate:"2027-03-31",
-location:"札幌",
-motivation:"高"
+startDate:"2025-12-01",
+endDate:"2027-03-31"
 },
 {
 id:"A002",
 name:"自治体DX",
 worker:"佐藤花子",
 status:"延長確認",
-startDate:"2025-12-01",
-endDate:"2026-12-31",
-location:"東京",
-motivation:"普通"
+startDate:"2025-08-01",
+endDate:"2026-12-31"
 },
 {
 id:"A003",
-name:"基幹システム刷新",
+name:"基幹刷新",
 worker:"田中一郎",
 status:"退場予定",
-startDate:"2025-05-01",
-endDate:"2026-11-30",
-location:"大阪",
-motivation:"低"
+startDate:"2025-01-01",
+endDate:"2026-11-30"
 }
 
 ];
 
 function calcDuration(startDate){
 
-    let start = new Date(startDate);
-    let now = new Date();
+    const start=new Date(startDate);
+    const now=new Date();
 
-    let months =
-    (now.getFullYear() - start.getFullYear()) * 12
-    + (now.getMonth() - start.getMonth());
+    let months=
+        (now.getFullYear()-start.getFullYear())*12
+        +(now.getMonth()-start.getMonth());
 
-    if(months < 0){
-        months = 0;
+    if(months<0){
+        months=0;
     }
 
-    return months + "ヶ月";
+    return months+"ヶ月";
 }
 
-function loadStatus(){
+function createStatusFilter(){
 
-    const statuses =
-    currentTab==="recruit"
-    ? ["","募集","本人確認中","提案中","面談","合否","保留"]
-    : ["","参画中","延長確認","退場予定"];
+    const area=document.getElementById("statusArea");
+    const toolbar=document.getElementById("statusToolbar");
 
-    statusFilter.innerHTML="";
+    if(currentTab!=="recruit"){
 
-    statuses.forEach(x=>{
+        area.innerHTML="";
+        toolbar.style.display="none";
 
-        let option=document.createElement("option");
-        option.value=x;
-        option.textContent=x || "すべて";
+        return;
+    }
 
-        statusFilter.appendChild(option);
+    toolbar.style.display="flex";
+
+    const saved=
+        JSON.parse(
+            localStorage.getItem(
+                "planner.recruit.statuses"
+            ) || "null"
+        );
+
+    area.innerHTML="";
+
+    recruitStatuses.forEach(status=>{
+
+        const checked=
+            saved
+            ? saved.includes(status)
+            : true;
+
+        area.innerHTML+=`
+        <label>
+          <input
+             type="checkbox"
+             class="statusChk"
+             value="${status}"
+             ${checked ? "checked" : ""}>
+          ${status}
+        </label>
+        `;
 
     });
 
+    document
+        .querySelectorAll(".statusChk")
+        .forEach(chk=>{
+
+            chk.addEventListener(
+                "change",
+                ()=>{
+                    saveStatus();
+                    render();
+                }
+            );
+        });
+}
+
+function saveStatus(){
+
+    const values=
+        [...document.querySelectorAll(".statusChk:checked")]
+        .map(x=>x.value);
+
+    localStorage.setItem(
+        "planner.recruit.statuses",
+        JSON.stringify(values)
+    );
+}
+
+function checkAll(){
+
+    document
+        .querySelectorAll(".statusChk")
+        .forEach(x=>x.checked=true);
+
+    saveStatus();
+    render();
+}
+
+function uncheckAll(){
+
+    document
+        .querySelectorAll(".statusChk")
+        .forEach(x=>x.checked=false);
+
+    saveStatus();
+    render();
+}
+
+function resetFilters(){
+
+    document
+        .getElementById("keyword")
+        .value="";
+
+    checkAll();
 }
 
 function getRows(){
 
-let rows =
-currentTab==="recruit"
-? recruitData
-: assignData.map(x=>({
-...x,
-duration:calcDuration(x.startDate)
-}));
+    let rows=[];
 
-const keyword =
-document.getElementById("keyword").value.toLowerCase();
+    if(currentTab==="recruit"){
 
-const status =
-statusFilter.value;
+        const selected=
+            [...document.querySelectorAll(".statusChk:checked")]
+            .map(x=>x.value);
 
-rows = rows.filter(row=>{
+        rows=
+            recruitData.filter(
+                x=>selected.includes(x.status)
+            );
 
-const text =
-Object.values(row).join(" ").toLowerCase();
+    }else{
 
-return text.includes(keyword)
-&& (!status || row.status===status);
+        rows=assignData.map(x=>({
+            ...x,
+            duration:
+                calcDuration(x.startDate)
+        }));
+    }
 
-});
+    const keyword=
+        document
+            .getElementById("keyword")
+            .value
+            .toLowerCase();
 
-if(sortColumn){
-
-rows.sort((a,b)=>{
-
-const aa = a[sortColumn];
-const bb = b[sortColumn];
-
-if(sortAsc){
-
-return String(aa).localeCompare(String(bb));
-
-}
-
-return String(bb).localeCompare(String(aa));
-
-});
-
-}
-
-return rows;
+    return rows.filter(
+        x=>
+            JSON.stringify(x)
+            .toLowerCase()
+            .includes(keyword)
+    );
 }
 
 function render(){
 
-const headers =
-currentTab==="recruit"
-? ["id","name","status","priority","location"]
-: ["id","name","worker","status","duration","endDate"];
+    const headers=
+        currentTab==="recruit"
+        ? ["id","name","status","priority","location"]
+        : ["id","name","worker","status","duration","endDate"];
 
-thead.innerHTML="";
+    thead.innerHTML="";
 
-headers.forEach(h=>{
+    headers.forEach(h=>{
 
-const th=document.createElement("th");
+        const th=document.createElement("th");
 
-th.textContent=h;
+        th.textContent=h;
 
-th.onclick=()=>{
+        th.onclick=()=>{
 
-if(sortColumn===h){
+            if(sortColumn===h){
+                sortAsc=!sortAsc;
+            }else{
+                sortColumn=h;
+                sortAsc=true;
+            }
 
-sortAsc=!sortAsc;
+            render();
+        };
 
-}else{
+        thead.appendChild(th);
 
-sortColumn=h;
-sortAsc=true;
+    });
 
-}
+    let rows=getRows();
 
-render();
+    if(sortColumn){
 
-};
+        rows.sort((a,b)=>{
 
-thead.appendChild(th);
+            const aa=a[sortColumn]||"";
+            const bb=b[sortColumn]||"";
 
-});
+            return sortAsc
+                ? String(aa).localeCompare(String(bb))
+                : String(bb).localeCompare(String(aa));
 
-const rows=getRows();
+        });
 
-const start=(currentPage-1)*pageSize;
+    }
 
-const pageRows=
-rows.slice(start,start+pageSize);
+    tbody.innerHTML="";
 
-tbody.innerHTML="";
+    const pageRows=
+        rows.slice(
+            (page-1)*pageSize,
+            page*pageSize
+        );
 
-pageRows.forEach(row=>{
+    pageRows.forEach(row=>{
 
-const tr=document.createElement("tr");
+        const tr=document.createElement("tr");
 
-tr.onclick=()=>showDetail(row);
+        tr.onclick=()=>showDetail(row);
 
-headers.forEach(h=>{
+        headers.forEach(h=>{
 
-const td=document.createElement("td");
+            const td=document.createElement("td");
 
-if(h==="status"){
+            if(h==="status"){
 
-let cls="badge ";
+                let cls="badge ";
 
-if(currentTab==="recruit"){
+                if(currentTab==="recruit"){
 
-if(row.status==="募集") cls+="recruit";
-else if(row.status==="面談") cls+="interview";
-else if(row.status==="提案中") cls+="pass";
-else cls+="pending";
+                    if(row.status==="募集") cls+="recruit";
+                    else if(row.status==="面談") cls+="interview";
+                    else if(row.status==="提案中") cls+="pass";
+                    else cls+="pending";
 
-}else{
+                }else{
 
-if(row.status==="参画中") cls+="activeProject";
-else if(row.status==="延長確認") cls+="extend";
-else cls+="leave";
+                    if(row.status==="参画中") cls+="activeProject";
+                    else if(row.status==="延長確認") cls+="extend";
+                    else cls+="leave";
+                }
 
-}
+                td.innerHTML=
+                `<span class="${cls}">
+                    ${row.status}
+                </span>`;
 
-td.innerHTML=
-`<span class="${cls}">${row.status}</span>`;
+            }else{
+                td.textContent=row[h];
+            }
 
-}
-else if(h==="priority"){
+            tr.appendChild(td);
 
-let cls="";
+        });
 
-if(row.priority==="高") cls="priority-high";
-if(row.priority==="中") cls="priority-middle";
-if(row.priority==="低") cls="priority-low";
+        tbody.appendChild(tr);
+    });
 
-td.innerHTML=`<span class="${cls}">${row.priority}</span>`;
-
-}else{
-
-td.textContent=row[h];
-
-}
-
-tr.appendChild(td);
-
-});
-
-tbody.appendChild(tr);
-
-});
-
-pageInfo.textContent =
-`${currentPage} / ${Math.max(1,Math.ceil(rows.length/pageSize))}`;
-
+    pageInfo.textContent=
+        `${page} / ${
+           Math.max(
+             1,
+             Math.ceil(rows.length/pageSize)
+           )
+        }`;
 }
 
 function showDetail(row){
 
-detailCard.classList.add("show");
+    detailCard.classList.add("show");
 
-let html="";
+    let html="";
 
-for(let key in row){
+    for(let key in row){
 
-html += `
-<div>
-<div class="label">${key}</div>
-<div class="value">${row[key]}</div>
-</div>
-`;
+        html+=`
+        <div>
+            <div class="label">${key}</div>
+            <div class="value">${row[key]}</div>
+        </div>
+        `;
+    }
 
-}
-
-html += `
-<div style="grid-column:1/-1;">
-<div class="label">備考</div>
-<textarea>
-案件に関するメモを記載できます。
-</textarea>
-</div>
-`;
-
-detailGrid.innerHTML=html;
-
-}
-
-function resetFilter(){
-
-keyword.value="";
-statusFilter.value="";
-currentPage=1;
-render();
-
+    detailGrid.innerHTML=html;
 }
 
 function nextPage(){
 
-const max =
-Math.ceil(getRows().length/pageSize);
+    const max=
+        Math.ceil(
+            getRows().length/pageSize
+        );
 
-if(currentPage<max){
-currentPage++;
-render();
-}
+    if(page<max){
+        page++;
+        render();
+    }
 }
 
 function prevPage(){
 
-if(currentPage>1){
-currentPage--;
-render();
+    if(page>1){
+        page--;
+        render();
+    }
 }
-}
 
-recruitTab.onclick = () => {
+recruitTab.onclick=()=>{
 
-currentTab="recruit";
+    currentTab="recruit";
 
-recruitTab.classList.add("active");
-assignTab.classList.remove("active");
+    recruitTab.classList.add("active");
+    assignTab.classList.remove("active");
 
-loadStatus();
-render();
+    page=1;
 
+    createStatusFilter();
+    render();
 };
 
-assignTab.onclick = () => {
+assignTab.onclick=()=>{
 
-currentTab="assign";
+    currentTab="assign";
 
-assignTab.classList.add("active");
-recruitTab.classList.remove("active");
+    assignTab.classList.add("active");
+    recruitTab.classList.remove("active");
 
-loadStatus();
-render();
+    page=1;
 
+    createStatusFilter();
+    render();
 };
 
-loadStatus();
+createStatusFilter();
 render();
 
 </script>
