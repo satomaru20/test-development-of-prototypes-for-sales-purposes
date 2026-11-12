@@ -1,5 +1,4 @@
-# React + TypeScript 顧客管理サンプル
-
+# React + TypeScript 顧客管理サンプル(勉強用)
 ## セットアップ
 
 Node.js 20.19+ または 22.12+ を推奨します（Vite 6 は Node.js 18+ をサポートします）。

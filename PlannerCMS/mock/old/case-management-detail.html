@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>募集案件詳細</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Yu Gothic UI",sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+}
+
+.header{
+    background:#1e3a8a;
+    color:white;
+    padding:16px 24px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.toolbar{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+.left-buttons,
+.right-buttons{
+    display:flex;
+    gap:10px;
+}
+
+button{
+    border:none;
+    border-radius:6px;
+    padding:10px 16px;
+    cursor:pointer;
+}
+
+.back-btn{
+    background:#6b7280;
+    color:white;
+}
+
+.chat-btn{
+    background:#10b981;
+    color:white;
+}
+
+.edit-btn{
+    background:#2563eb;
+    color:white;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+}
+
+.item{
+    background:#f8fafc;
+    padding:15px;
+    border-radius:8px;
+}
+
+.label{
+    color:#666;
+    font-size:12px;
+    margin-bottom:5px;
+}
+
+.value{
+    font-weight:bold;
+}
+
+.full{
+    grid-column:1 / -1;
+}
+
+.badge{
+    display:inline-block;
+    background:#16a34a;
+    color:white;
+    padding:5px 12px;
+    border-radius:20px;
+}
+
+.priority-high{
+    color:#dc2626;
+    font-weight:bold;
+}
+
+.memo{
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:15px;
+    min-height:120px;
+    line-height:1.8;
+}
+
+@media(max-width:768px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .toolbar{
+        flex-direction:column;
+        gap:10px;
+    }
+
+    .left-buttons,
+    .right-buttons{
+        width:100%;
+    }
+
+    button{
+        flex:1;
+    }
+
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+募集案件管理 - 案件詳細
+</div>
+
+<div class="container">
+
+<div class="card">
+
+    <div class="toolbar">
+
+        <div class="left-buttons">
+            <button class="back-btn">
+                一覧へ戻る
+            </button>
+        </div>
+
+        <div class="right-buttons">
+
+            <button class="chat-btn">
+                チャット
+            </button>
+
+            <button
+                class="edit-btn"
+                onclick="editProject()">
+                編集
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="grid">
+
+        <div class="item">
+            <div class="label">案件ID</div>
+            <div class="value">A001</div>
+        </div>
+
+        <div class="item">
+            <div class="label">案件名</div>
+            <div class="value">ECサイト開発</div>
+        </div>
+
+        <div class="item">
+            <div class="label">作業内容</div>
+            <div class="value">Webシステム開発</div>
+        </div>
+
+        <div class="item">
+            <div class="label">ステータス</div>
+            <div class="value">
+                <span class="badge">
+                    展開前
+                </span>
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">優先度</div>
+            <div class="value priority-high">
+                高
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">増員提案者</div>
+            <div class="value">
+                山田 太郎
+            </div>
+        </div>
+
+        <div class="item full">
+            <div class="label">案件詳細</div>
+            <div class="value">
+                ECサイト全面刷新案件。
+                React、TypeScript、Azure環境を利用したアジャイル開発。
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">必須スキル</div>
+            <div class="value">
+                React、TypeScript、Azure、ECサイト運用経験
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">尚可スキル</div>
+            <div class="value">
+                AWS、GraphQL、CI/CDパイプライン構築経験
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">契約方法</div>
+            <div class="value">
+                準委任
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">勤務地</div>
+            <div class="value">
+                札幌（ハイブリッド）
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">作業期間</div>
+            <div class="value">
+                2026/01 ～ 2027/03
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">精算時間（精算幅）</div>
+            <div class="value">
+                140h ～ 180h
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">単価</div>
+            <div class="value">
+                750,000円
+            </div>
+        </div>
+
+        <div class="item">
+            <div class="label">商流</div>
+            <div class="value">
+                元請 → 自社
+            </div>
+        </div>
+
+        <div class="item full">
+
+            <div class="label">
+                備考
+            </div>
+
+            <div class="memo">
+                AWS経験者優先。<br>
+                React経験2年以上推奨。<br>
+                延長可能性あり。
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+function editProject(){
+
+    const role = "manager";
+
+    switch(role){
+
+        case "admin":
+            alert("管理者向け編集画面へ遷移");
+            break;
+
+        case "manager":
+            alert("グループ長・営業向け編集画面へ遷移");
+            break;
+
+        default:
+            alert("メンバー向け編集画面へ遷移");
+    }
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planner CMS - 案件管理</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#253047;font-family:"Yu Gothic UI","Meiryo",sans-serif}button,input,textarea{font:inherit}
+header{background:#1e3a8a;color:#fff;padding:17px 24px;font-size:21px;font-weight:bold}.container{max-width:1260px;margin:auto;padding:22px}.card{background:white;border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.tabs,.search-row,.status-toolbar,.statusArea,.toolbar,.left-buttons,.right-buttons,.pagination{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tabs{margin-bottom:16px}.search-row,.status-toolbar{margin-bottom:12px}.statusArea label{background:#eef2ff;border:1px solid #dbeafe;border-radius:6px;padding:6px 10px;cursor:pointer}button{border:0;border-radius:7px;padding:9px 15px;cursor:pointer;font-weight:600}button:hover{filter:brightness(.95)}button:disabled{opacity:.45;cursor:not-allowed}.primary,.tab.active,.edit-btn{background:#2563eb;color:#fff}.secondary,.back-btn{background:#6b7280;color:#fff}.chat-btn{background:#10b981;color:#fff}.tab{background:#dbeafe}.search-row input{padding:9px;border:1px solid #cbd5e1;border-radius:6px;width:270px;max-width:100%}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}th{background:#f8fafc;cursor:pointer;user-select:none}tbody tr{cursor:pointer}tbody tr:hover{background:#eff6ff}tbody tr:focus{outline:2px solid #2563eb;outline-offset:-2px}.badge{display:inline-block;background:#64748b;color:#fff;border-radius:20px;padding:4px 10px;font-size:12px}.badge.recruit,.badge.extend{background:#2563eb}.badge.interview{background:#f59e0b}.badge.pass,.badge.activeProject{background:#16a34a}.badge.leave{background:#dc2626}.pagination{justify-content:center;margin-top:16px}.toolbar{justify-content:space-between;align-items:flex-start;margin-bottom:20px}.details-title{margin:0 0 16px;font-size:22px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.detail-item{background:#f8fafc;padding:15px;border-radius:8px;min-width:0}.detail-item.full{grid-column:1/-1}.detail-label{color:#64748b;font-size:12px;margin-bottom:6px}.detail-value{font-weight:600;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}.priority-high{color:#dc2626}.memo{border:1px solid #dbe2ea;background:#fff;padding:14px;min-height:110px;border-radius:8px}.hint{color:#64748b;font-size:13px;margin-top:12px}.empty{text-align:center;color:#64748b;padding:30px}textarea,.detail-input{display:block;width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:6px;background:white;min-height:40px}.detail-input:focus,textarea:focus{outline:2px solid #93c5fd}.toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;background:#1e293b;color:white;border-radius:9px;box-shadow:0 4px 20px #0002;z-index:20}#chatPanel{margin-top:16px;padding:16px;background:#f0fdf4;border-radius:8px}#chatPanel textarea{margin:10px 0}#chatHistory{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}#listView[hidden],#detailView[hidden],#chatPanel[hidden]{display:none!important}
+@media(max-width:768px){.container{padding:12px}.card{padding:14px}.detail-grid{grid-template-columns:1fr}.toolbar{flex-direction:column}.left-buttons,.right-buttons{width:100%}.search-row input{width:100%}header{font-size:18px}.right-buttons button{flex:1}}
+</style>
+</head>
+<body>
+<header id="pageHeading">Planner CMS - 募集案件 / 参画案件管理</header>
+<main class="container">
+<section id="listView">
+  <div class="tabs" role="tablist" aria-label="案件種別">
+    <button type="button" class="tab active" id="recruitTab" role="tab" aria-selected="true">募集案件管理</button>
+    <button type="button" class="tab" id="assignTab" role="tab" aria-selected="false">参画案件管理</button>
+  </div>
+  <div class="card">
+    <div class="search-row"><input type="text" id="keyword" placeholder="案件名・作業者検索" aria-label="検索キーワード"><button type="button" class="primary" id="searchBtn">検索</button><button type="button" class="secondary" id="resetBtn">条件リセット</button></div>
+    <div class="status-toolbar" id="statusToolbar"><button type="button" class="secondary" id="checkAllBtn">全選択</button><button type="button" class="secondary" id="uncheckAllBtn">全解除</button></div>
+    <div class="statusArea" id="statusArea" aria-label="募集ステータス絞り込み"></div>
+  </div>
+  <div class="card"><div class="table-wrap"><table><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div><div class="pagination"><button type="button" class="secondary" id="prevBtn">前へ</button><span id="pageInfo"></span><button type="button" class="secondary" id="nextBtn">次へ</button></div><p class="hint">行をクリックすると案件の詳細を表示します。</p></div>
+</section>
+<section id="detailView" hidden>
+  <div class="card"><div class="toolbar"><div class="left-buttons"><button type="button" id="backBtn" class="back-btn">一覧へ戻る</button></div><div class="right-buttons"><button type="button" id="chatBtn" class="chat-btn">チャット</button><button type="button" id="editBtn" class="edit-btn">編集</button><button type="button" id="saveBtn" class="primary" hidden>保存</button><button type="button" id="cancelBtn" class="secondary" hidden>キャンセル</button></div></div>
+  <h1 class="details-title" id="detailTitle">案件詳細</h1><div class="detail-grid" id="detailGrid"></div>
+  <div id="chatPanel" hidden><strong>案件内メモ（ローカルデモ）</strong><p class="hint">外部へのメッセージ送信機能はありません。このブラウザ内だけに保存されます。</p><div id="chatHistory"></div><textarea id="chatText" rows="3" placeholder="メモを入力"></textarea><button type="button" class="chat-btn" id="chatAddBtn">メモを追加</button></div>
+  </div>
+</section>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const recruitStatuses=['展開前','募集','本人確認中','提案中','面談','合否','保留','見送り'];
+const recruitData=[
+{id:'R001',name:'金融システム刷新',status:'提案中',priority:'高',location:'東京'},
+{id:'R002',name:'生成AI開発',status:'面談',priority:'高',location:'フルリモート'},
+{id:'R003',name:'クラウド移行案件',status:'募集',priority:'中',location:'札幌'},
+{id:'R004',name:'自治体DX',status:'本人確認中',priority:'低',location:'仙台'}
+];
+const assignData=[
+{id:'A001',name:'ECサイト開発',worker:'山田太郎',status:'参画中',startDate:'2025-12-01',endDate:'2027-03-31'},
+{id:'A002',name:'自治体DX',worker:'佐藤花子',status:'延長確認',startDate:'2025-08-01',endDate:'2026-12-31'},
+{id:'A003',name:'基幹刷新',worker:'田中一郎',status:'退場予定',startDate:'2025-01-01',endDate:'2026-11-30'}
+];
+const details={
+ R003:{work:'クラウド移行案件',description:'クラウド移行案件\nReact、TypeScript、Azure環境を利用したアジャイル開発。',requiredSkills:'React、TypeScript、Azure、クラウド移行案件',preferredSkills:'AWS、GraphQL、CI/CDパイプライン構築経験',contract:'準委任',location:'札幌(ハイブリッド)',settlement:'140h ～ 180h',unitPrice:'750,000円',businessFlow:'元請 → 自社',memo:'AWS経験者優先。\nReact経験2年以上推奨。\n延長可能性あり。'},
+ R004:{work:'自治体DX',description:'自治体DX\nReact、TypeScript、Azure環境を利用したアジャイル開発。',requiredSkills:'React、TypeScript、Azure、自治体DX',preferredSkills:'AWS、GraphQL、CI/CDパイプライン構築経験',contract:'準委任',location:'仙台',settlement:'140h ～ 180h',unitPrice:'750,000円',businessFlow:'元請 → 自社',memo:'AWS経験者優先。\nReact経験2年以上推奨。\n延長可能性あり。'},
+};
+const localKey='planner.case.details.v1';
+try{Object.assign(details,JSON.parse(localStorage.getItem(localKey)||'{}'));}catch(e){console.warn('保存済み詳細を読み込めません',e)}
+let currentTab='recruit',page=1,sortColumn='',sortAsc=true,selectedId=null,editing=false;
+const pageSize=10;
+const fields=[
+['id','案件ID'],['name','案件名'],['work','作業内容'],['status','ステータス'],['priority','優先度'],['proposer','増員提案者'],['worker','作業者'],['description','案件詳細','full'],['requiredSkills','必須スキル'],['preferredSkills','尚可スキル'],['contract','契約方法'],['location','勤務地'],['period','作業期間'],['settlement','精算時間（精算幅）'],['unitPrice','単価'],['businessFlow','商流'],['startDate','参画開始日'],['endDate','参画終了日'],['duration','参画期間'],['memo','備考','full']
+];
+const toStatusClass=s=>({'募集':'recruit','面談':'interview','提案中':'pass','参画中':'activeProject','延長確認':'extend','退場予定':'leave'})[s]||'';
+const calcDuration=startDate=>{if(!startDate)return '未登録';const d=new Date(startDate+'T00:00:00'),now=new Date();if(Number.isNaN(d.getTime()))return '未登録';return Math.max(0,(now.getFullYear()-d.getFullYear())*12+now.getMonth()-d.getMonth()-(now.getDate()<d.getDate()?1:0))+'ヶ月';};
+function getRow(id){return [...recruitData,...assignData].find(x=>x.id===id);}
+function mergedRow(row){const r={...row,...(details[row.id]||{})};if(row.startDate)r.duration=calcDuration(r.startDate);if(r.startDate&&r.endDate&&!r.period)r.period=r.startDate.replaceAll('-','/')+' ～ '+r.endDate.replaceAll('-','/');return r;}
+function createStatusFilter(){const area=$('statusArea');area.replaceChildren();$('statusToolbar').hidden=currentTab!=='recruit';if(currentTab!=='recruit')return;let saved=null;try{saved=JSON.parse(localStorage.getItem('planner.recruit.statuses')||'null');}catch(e){}recruitStatuses.forEach(status=>{const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.className='statusChk';input.value=status;input.checked=Array.isArray(saved)?saved.includes(status):true;input.addEventListener('change',()=>{saveStatus();page=1;render();});label.append(input,document.createTextNode(' '+status));area.append(label);});}
+function saveStatus(){try{localStorage.setItem('planner.recruit.statuses',JSON.stringify([...document.querySelectorAll('.statusChk:checked')].map(x=>x.value)));}catch(e){console.warn(e)}}
+function checkAll(checked){document.querySelectorAll('.statusChk').forEach(x=>x.checked=checked);saveStatus();page=1;render();}
+function resetFilters(){$('keyword').value='';if(currentTab==='recruit')checkAll(true);else{page=1;render();}}
+function getRows(){let rows=currentTab==='recruit'?recruitData.filter(x=>[...document.querySelectorAll('.statusChk:checked')].some(y=>y.value===x.status)):assignData;const kw=$('keyword').value.trim().toLocaleLowerCase('ja');return rows.map(mergedRow).filter(x=>Object.values(x).some(y=>String(y??'').toLocaleLowerCase('ja').includes(kw)));}
+function render(){const heads=currentTab==='recruit'?[['id','案件ID'],['name','案件名'],['status','ステータス'],['priority','優先度'],['location','勤務地']]:[['id','案件ID'],['name','案件名'],['worker','作業者'],['status','ステータス'],['duration','参画期間'],['endDate','終了日']];$('thead').replaceChildren();heads.forEach(([key,label])=>{const th=document.createElement('th');th.textContent=label+(sortColumn===key?(sortAsc?' ▲':' ▼'):'');th.tabIndex=0;th.addEventListener('click',()=>{sortAsc=sortColumn===key?!sortAsc:true;sortColumn=key;page=1;render();});th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();th.click();}});$('thead').append(th);});let rows=getRows();if(sortColumn)rows.sort((a,b)=>{const c=String(a[sortColumn]??'').localeCompare(String(b[sortColumn]??''),'ja',{numeric:true});return sortAsc?c:-c;});const max=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,max);$('tbody').replaceChildren();rows.slice((page-1)*pageSize,page*pageSize).forEach(row=>{const tr=document.createElement('tr');tr.tabIndex=0;tr.setAttribute('aria-label',row.name+'の詳細を開く');tr.addEventListener('click',()=>openDetail(row.id));tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail(row.id);}});heads.forEach(([key])=>{const td=document.createElement('td');if(key==='status'){const s=document.createElement('span');s.className='badge '+toStatusClass(row.status);s.textContent=row.status;td.append(s);}else td.textContent=row[key]??'—';tr.append(td);});$('tbody').append(tr);});if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent='該当する案件がありません';tr.append(td);$('tbody').append(tr);}$('pageInfo').textContent=`${page} / ${max} （${rows.length}件）`;$('prevBtn').disabled=page<=1;$('nextBtn').disabled=page>=max;}
+function setTab(tab){currentTab=tab;page=1;sortColumn='';$('recruitTab').classList.toggle('active',tab==='recruit');$('assignTab').classList.toggle('active',tab==='assign');$('recruitTab').setAttribute('aria-selected',String(tab==='recruit'));$('assignTab').setAttribute('aria-selected',String(tab==='assign'));createStatusFilter();render();}
+function openDetail(id){if(!getRow(id))return;selectedId=id;editing=false;$('listView').hidden=true;$('detailView').hidden=false;$('chatPanel').hidden=true;$('pageHeading').textContent='Planner CMS - '+(currentTab==='recruit'?'募集案件管理':'参画案件管理')+' / 案件詳細';renderDetail();window.scrollTo(0,0);}
+function backToList(){selectedId=null;editing=false;$('detailView').hidden=true;$('listView').hidden=false;$('pageHeading').textContent='Planner CMS - 募集案件 / 参画案件管理';render();window.scrollTo(0,0);}
+function visibleFields(row){return fields.filter(([key])=>currentTab==='assign'||!['worker','startDate','endDate','duration'].includes(key)).filter(([key])=>currentTab==='recruit'||key!=='proposer');}
+function renderDetail(){if(!selectedId)return;const row=mergedRow(getRow(selectedId));$('detailTitle').textContent='案件詳細：'+row.name;$('editBtn').hidden=editing;$('saveBtn').hidden=!editing;$('cancelBtn').hidden=!editing;$('detailGrid').replaceChildren();visibleFields(row).forEach(([key,label,span])=>{const item=document.createElement('div');item.className='detail-item'+(span?' full':'');const l=document.createElement('div');l.className='detail-label';l.textContent=label;const v=document.createElement('div');v.className='detail-value';if(editing&&!['id','duration','period'].includes(key)){const input=document.createElement(['description','memo'].includes(key)?'textarea':'input');if(input.tagName==='INPUT')input.type='text';else input.rows=4;input.className='detail-input';input.dataset.field=key;input.value=row[key]??'';v.append(input);}else if(key==='status'){const s=document.createElement('span');s.className='badge '+toStatusClass(row.status);s.textContent=row.status||'未登録';v.append(s);}else{v.textContent=row[key]||'未登録';if(key==='priority'&&row[key]==='高')v.classList.add('priority-high');if(key==='memo')v.classList.add('memo');}item.append(l,v);$('detailGrid').append(item);});renderChat();}
+function saveDetail(){const original=getRow(selectedId);if(!original)return;const changes={...(details[selectedId]||{})};document.querySelectorAll('#detailGrid [data-field]').forEach(el=>{const key=el.dataset.field,value=el.value.trim();if(['name','status','priority','location','worker','startDate','endDate'].includes(key)&&Object.prototype.hasOwnProperty.call(original,key)){original[key]=value;}else changes[key]=value;});details[selectedId]=changes;try{localStorage.setItem(localKey,JSON.stringify(details));localStorage.setItem('planner.case.base.v1',JSON.stringify({recruitData,assignData}));}catch(e){alert('ブラウザへの保存に失敗しました。ストレージ設定を確認してください。');return;}editing=false;renderDetail();alert('変更内容をこのブラウザに保存しました。');}
+function renderChat(){if(!selectedId)return;let list=[];try{list=JSON.parse(localStorage.getItem('planner.case.memo.'+selectedId)||'[]');}catch(e){}$('chatHistory').replaceChildren();list.forEach(x=>{const p=document.createElement('p');p.textContent=x;$('chatHistory').append(p);});if(!list.length)$('chatHistory').textContent='メモはまだありません。';}
+$('recruitTab').addEventListener('click',()=>setTab('recruit'));
+$('assignTab').addEventListener('click',()=>setTab('assign'));
+$('searchBtn').addEventListener('click',()=>{page=1;render();});
+$('keyword').addEventListener('keydown',e=>{if(e.key==='Enter'){page=1;render();}});
+$('resetBtn').addEventListener('click',resetFilters);
+$('checkAllBtn').addEventListener('click',()=>checkAll(true));
+$('uncheckAllBtn').addEventListener('click',()=>checkAll(false));
+$('prevBtn').addEventListener('click',()=>{if(page>1){page--;render();}});
+$('nextBtn').addEventListener('click',()=>{page++;render();});
+$('backBtn').addEventListener('click',backToList);
+$('editBtn').addEventListener('click',()=>{editing=true;renderDetail();});
+$('cancelBtn').addEventListener('click',()=>{editing=false;renderDetail();});
+$('saveBtn').addEventListener('click',saveDetail);
+$('chatBtn').addEventListener('click',()=>{$('chatPanel').hidden=!$('chatPanel').hidden;});
+$('chatAddBtn').addEventListener('click',()=>{const value=$('chatText').value.trim();if(!value)return;const key='planner.case.memo.'+selectedId;let list=[];try{list=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}list.push(new Date().toLocaleString('ja-JP')+'  '+value);try{localStorage.setItem(key,JSON.stringify(list));$('chatText').value='';renderChat();}catch(e){alert('メモを保存できませんでした。');}});
+try{const saved=JSON.parse(localStorage.getItem('planner.case.base.v1')||'null');if(saved?.recruitData?.length&&saved?.assignData?.length){saved.recruitData.forEach(x=>{const o=getRow(x.id);if(o)Object.assign(o,x);});saved.assignData.forEach(x=>{const o=getRow(x.id);if(o)Object.assign(o,x);});}}catch(e){console.warn('案件の保存値を読み込めません',e)}
+setTab('recruit');
+</script>
+</body>
+</html>
