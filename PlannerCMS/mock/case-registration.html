@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planner CMS - 募集案件新規登録</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#253047;font-family:"Yu Gothic UI",Meiryo,sans-serif;font-size:14px}header{background:#1e3a8a;color:white;padding:17px 24px;font-size:21px;font-weight:700}main{max-width:1160px;margin:0 auto;padding:22px}.panel{background:white;border-radius:10px;padding:24px;box-shadow:0 2px 8px #0001;margin:0 0 18px}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}.heading{font-size:22px;font-weight:700;margin:0}.muted{color:#64748b}.section-title{font-size:17px;border-bottom:2px solid #e2e8f0;padding:0 0 11px;margin:3px 0 17px;color:#1e3a8a}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 20px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-weight:700;font-size:13px}.required{color:#dc2626}input,select,textarea{font:inherit;padding:10px 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#253047;min-width:0;width:100%}textarea{resize:vertical;min-height:90px;line-height:1.6}input:focus,select:focus,textarea:focus{outline:2px solid #93c5fd}button{border:0;border-radius:7px;padding:10px 16px;cursor:pointer;font:inherit;font-weight:700}.primary{background:#2563eb;color:white}.secondary{background:#6b7280;color:white}.light{background:#e8eefc;color:#254d9d}.actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}.note{border-left:4px solid #3b82f6;background:#eff6ff;padding:12px 15px;border-radius:5px;line-height:1.7;margin-bottom:18px}.error{color:#b91c1c;min-height:20px}.mini{font-size:12px}.preview{display:none;background:#f8fafc;border:1px solid #dbe4ef;border-radius:8px;padding:15px;margin-top:18px;white-space:pre-wrap;overflow-wrap:anywhere}button:hover{filter:brightness(.96)}@media(max-width:700px){main{padding:12px}.panel{padding:16px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}header{font-size:18px;padding:16px}}
+</style></head><body>
+<header>Planner CMS - 募集案件 / 参画案件管理</header>
+<main>
+<div class="toolbar"><div><h1 class="heading">募集案件 新規登録</h1><div class="muted mini">募集案件管理の詳細画面と同じ項目で登録できます</div></div><button class="secondary" type="button" id="backTop">← 案件一覧へ戻る</button></div>
+<div class="note">登録した案件は、このブラウザの保存領域に保存され、<b>募集案件管理の一覧と詳細画面</b>に反映されます。HTMLファイルを同じフォルダに配置してください。</div>
+<form id="caseForm">
+<section class="panel"><h2 class="section-title">基本情報</h2><div class="grid">
+<div class="field"><label for="id">案件ID <span class="required">*</span></label><input name="id" id="id" required maxlength="30" placeholder="例：R005" pattern="R[0-9]+" title="Rで始まる案件ID（例：R005）"><span class="muted mini">Rから始まるIDを設定します。既存IDは使用できません。</span></div>
+<div class="field"><label for="name">案件名 <span class="required">*</span></label><input name="name" id="name" required maxlength="150" placeholder="例：業務システム刷新"></div>
+<div class="field"><label for="status">ステータス <span class="required">*</span></label><select name="status" id="status" required><option>展開前</option><option selected>募集</option><option>本人確認中</option><option>提案中</option><option>面談</option><option>合否</option><option>保留</option><option>見送り</option></select></div>
+<div class="field"><label for="priority">優先度</label><select name="priority" id="priority"><option value="">未設定</option><option>高</option><option selected>中</option><option>低</option></select></div>
+<div class="field full"><label for="work">作業内容</label><textarea name="work" id="work" rows="2" placeholder="担当する業務の概要"></textarea></div>
+<div class="field"><label for="proposer">増員提案者</label><input name="proposer" id="proposer" placeholder="例：営業担当者名"></div>
+<div class="field"><label for="location">勤務地</label><input name="location" id="location" placeholder="例：東京（リモート併用）"></div>
+<div class="field full"><label for="description">案件詳細</label><textarea name="description" id="description" rows="5" placeholder="プロジェクト背景、作業範囲、技術環境など"></textarea></div>
+</div></section>
+<section class="panel"><h2 class="section-title">スキル・契約条件</h2><div class="grid">
+<div class="field full"><label for="requiredSkills">必須スキル</label><textarea name="requiredSkills" id="requiredSkills" rows="3"></textarea></div>
+<div class="field full"><label for="preferredSkills">尚可スキル</label><textarea name="preferredSkills" id="preferredSkills" rows="3"></textarea></div>
+<div class="field"><label for="contract">契約方法</label><input name="contract" id="contract" list="contractOptions" placeholder="例：準委任"><datalist id="contractOptions"><option value="準委任"><option value="請負"><option value="派遣"></datalist></div>
+<div class="field"><label for="period">作業期間</label><input name="period" id="period" placeholder="例：2026/12 ～ 2027/06"></div>
+<div class="field"><label for="settlement">精算時間（精算幅）</label><input name="settlement" id="settlement" placeholder="例：140h ～ 180h"></div>
+<div class="field"><label for="unitPrice">単価</label><input name="unitPrice" id="unitPrice" placeholder="例：750,000円"></div>
+<div class="field full"><label for="businessFlow">商流</label><input name="businessFlow" id="businessFlow" placeholder="例：エンド → 元請 → 自社"></div>
+<div class="field full"><label for="memo">備考</label><textarea name="memo" id="memo" rows="4"></textarea></div>
+</div></section>
+<div class="panel"><p class="error" id="error" role="alert"></p><div class="actions"><button type="button" class="light" id="previewBtn">入力内容を確認</button><button type="button" class="secondary" id="cancelBtn">キャンセル</button><button type="submit" class="primary">案件を登録する</button></div><div class="preview" id="preview"></div></div>
+</form></main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const base='case-management-assign-integrated.html',key='planner.case.registered.v1';
+const fields=[['id','案件ID'],['name','案件名'],['work','作業内容'],['status','ステータス'],['priority','優先度'],['proposer','増員提案者'],['description','案件詳細'],['requiredSkills','必須スキル'],['preferredSkills','尚可スキル'],['contract','契約方法'],['location','勤務地'],['period','作業期間'],['settlement','精算時間（精算幅）'],['unitPrice','単価'],['businessFlow','商流'],['memo','備考']];
+const params=new URLSearchParams(location.search);
+function read(){try{const rows=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(rows)?rows:[]}catch{return []}}
+function values(){return Object.fromEntries(fields.map(([k])=>[k,$(k).value.trim()]))}
+function goBack(id){const url=new URL(base,location.href);if(id)url.searchParams.set('createdId',id);location.assign(url.href)}
+$('backTop').onclick=()=>goBack();$('cancelBtn').onclick=()=>goBack();
+const existingIds=new Set(['R001','R002','R003','R004','A001','A002','A003']);
+try{const saved=JSON.parse(localStorage.getItem('planner.case.base.v1')||'null');(saved?.recruitData||[]).concat(saved?.assignData||[]).forEach(x=>{if(x&&x.id)existingIds.add(x.id)})}catch{}
+read().forEach(x=>existingIds.add(x.id));
+let next=5;while(existingIds.has('R'+String(next).padStart(3,'0')))next++;
+$('id').value='R'+String(next).padStart(3,'0');
+$('previewBtn').onclick=()=>{$('preview').textContent=fields.map(([k,label])=>label+'：'+(values()[k]||'—')).join('\n');$('preview').style.display='block'};
+$('caseForm').onsubmit=e=>{e.preventDefault();$('error').textContent='';const v=values();if(!/^R[0-9]+$/.test(v.id)){$('error').textContent='案件IDは「R005」のように入力してください。';$('id').focus();return}if(existingIds.has(v.id)){$('error').textContent='案件ID「'+v.id+'」は既に登録されています。別のIDを入力してください。';$('id').focus();return}if(!v.name){$('error').textContent='案件名を入力してください。';return}try{const list=read();list.push(v);localStorage.setItem(key,JSON.stringify(list));goBack(v.id)}catch(err){$('error').textContent='保存できませんでした。ブラウザのストレージ設定を確認してください。';console.error(err)}};
+})();
+</script><a id="dashboardHomeLink" href="dashboard.html" aria-label="ホームダッシュボードへ戻る" style="position:fixed;bottom:18px;left:18px;background:#1e3a8a;color:#fff;z-index:35;box-shadow:0 4px 15px #0b225044;border-radius:25px;padding:10px 16px;font-size:13px;font-weight:bold;text-decoration:none;font-family:Meiryo,sans-serif">⌂ ホームへ戻る</a><style>@media print{#dashboardHomeLink{display:none!important}}</style>
+</body></html>

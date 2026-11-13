@@ -18,7 +18,7 @@ header{background:#1e3a8a;color:#fff;padding:17px 24px;font-size:21px;font-weigh
 <section id="listView">
   <div class="tabs" role="tablist" aria-label="案件種別">
     <button type="button" class="tab active" id="recruitTab" role="tab" aria-selected="true">募集案件管理</button>
-    <button type="button" class="tab" id="assignTab" role="tab" aria-selected="false">参画案件管理</button>
+    <button type="button" class="tab" id="assignTab" role="tab" aria-selected="false">参画案件管理</button><button type="button" class="primary" id="registerCaseBtn" style="margin-left:auto">＋ 募集案件を新規登録</button>
   </div>
   <div class="card">
     <div class="search-row"><input type="text" id="keyword" placeholder="案件名・作業者検索" aria-label="検索キーワード"><button type="button" class="primary" id="searchBtn">検索</button><button type="button" class="secondary" id="resetBtn">条件リセット</button></div>
@@ -45,6 +45,10 @@ header{background:#1e3a8a;color:#fff;padding:17px 24px;font-size:21px;font-weigh
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
+const navParams=new URLSearchParams(window.location.search);
+const fromMembers=navParams.get('from')==='member-management';
+const linkedProjectId=navParams.get('projectId');
+const memberPage='member-management.html';
 const recruitStatuses=['展開前','募集','本人確認中','提案中','面談','合否','保留','見送り'];
 const recruitData=[
 {id:'R001',name:'金融システム刷新',status:'提案中',priority:'高',location:'東京'},
@@ -91,10 +95,10 @@ function getRows(){let rows=currentTab==='recruit'?recruitData.filter(x=>[...doc
 function render(){renderListKpis();const heads=currentTab==='recruit'?[['id','案件ID'],['name','案件名'],['status','ステータス'],['priority','優先度'],['location','勤務地']]:[['id','案件ID'],['name','案件名'],['worker','作業者'],['status','ステータス'],['duration','参画期間'],['extensionPreference','延長意向']];$('thead').replaceChildren();heads.forEach(([key,label])=>{const th=document.createElement('th');th.textContent=label+(sortColumn===key?(sortAsc?' ▲':' ▼'):'');th.tabIndex=0;th.addEventListener('click',()=>{sortAsc=sortColumn===key?!sortAsc:true;sortColumn=key;page=1;render();});th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();th.click();}});$('thead').append(th);});let rows=getRows();if(sortColumn)rows.sort((a,b)=>{const c=String(a[sortColumn]??'').localeCompare(String(b[sortColumn]??''),'ja',{numeric:true});return sortAsc?c:-c;});const max=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,max);$('tbody').replaceChildren();rows.slice((page-1)*pageSize,page*pageSize).forEach(row=>{const tr=document.createElement('tr');tr.tabIndex=0;tr.setAttribute('aria-label',row.name+'の詳細を開く');tr.addEventListener('click',()=>openDetail(row.id));tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail(row.id);}});heads.forEach(([key])=>{const td=document.createElement('td');if(key==='status'){const s=document.createElement('span');s.className='badge '+toStatusClass(row.status);s.textContent=row.status;td.append(s);}else td.textContent=row[key]??'—';tr.append(td);});$('tbody').append(tr);});if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=heads.length;td.className='empty';td.textContent='該当する案件がありません';tr.append(td);$('tbody').append(tr);}$('pageInfo').textContent=`${page} / ${max} （${rows.length}件）`;$('prevBtn').disabled=page<=1;$('nextBtn').disabled=page>=max;}
 function setTab(tab){currentTab=tab;page=1;sortColumn='';$('recruitTab').classList.toggle('active',tab==='recruit');$('assignTab').classList.toggle('active',tab==='assign');$('recruitTab').setAttribute('aria-selected',String(tab==='recruit'));$('assignTab').setAttribute('aria-selected',String(tab==='assign'));createStatusFilter();render();}
 function openDetail(id){if(!getRow(id))return;selectedId=id;editing=false;$('listView').hidden=true;$('detailView').hidden=false;$('chatPanel').hidden=true;$('documentPanel').hidden=true;$('docFile').value='';$('docStatus').textContent='';$('pageHeading').textContent='Planner CMS - '+(currentTab==='recruit'?'募集案件管理':'参画案件管理')+' / 案件詳細';renderDetail();window.scrollTo(0,0);}
-function backToList(){selectedId=null;editing=false;$('detailView').hidden=true;$('listView').hidden=false;$('pageHeading').textContent='Planner CMS - 募集案件 / 参画案件管理';render();window.scrollTo(0,0);}
+function backToList(){if(fromMembers){window.location.assign(new URL(memberPage,window.location.href).href);return;}selectedId=null;editing=false;$('detailView').hidden=true;$('listView').hidden=false;$('pageHeading').textContent='Planner CMS - 募集案件 / 参画案件管理';render();window.scrollTo(0,0);}
 function visibleFields(row){return fields.filter(([key])=>currentTab==='assign'||!['worker','startDate','endDate','duration'].includes(key)).filter(([key])=>currentTab==='recruit'||key!=='proposer');}
 function renderDetail(){if(!selectedId)return;const row=mergedRow(getRow(selectedId));$('detailTitle').textContent=(currentTab==='assign'?'参画案件詳細：':'案件詳細：')+row.name;$('editBtn').hidden=editing;$('saveBtn').hidden=!editing;$('cancelBtn').hidden=!editing;$('detailGrid').replaceChildren();if(currentTab==='assign'){renderAssignDetail(row);renderChat();return;}$('assignDetailKpis').hidden=true;$('assignKpiHint').hidden=true;$('assignDetailSections').hidden=true;$('detailGrid').hidden=false;$('docBtn').hidden=true;visibleFields(row).forEach(([key,label,span])=>{const item=document.createElement('div');item.className='detail-item'+(span?' full':'');const l=document.createElement('div');l.className='detail-label';l.textContent=label;const v=document.createElement('div');v.className='detail-value';if(editing&&!['id','duration','period'].includes(key)){const input=document.createElement(['description','memo'].includes(key)?'textarea':'input');if(input.tagName==='INPUT')input.type='text';else input.rows=4;input.className='detail-input';input.dataset.field=key;input.value=row[key]??'';v.append(input);}else if(key==='status'){const s=document.createElement('span');s.className='badge '+toStatusClass(row.status);s.textContent=row.status||'未登録';v.append(s);}else{v.textContent=row[key]||'未登録';if(key==='priority'&&row[key]==='高')v.classList.add('priority-high');if(key==='memo')v.classList.add('memo');}item.append(l,v);$('detailGrid').append(item);});renderChat();}
-function saveDetail(){const original=getRow(selectedId);if(!original)return;const changes={...(details[selectedId]||{})};document.querySelectorAll('#detailGrid [data-field],#assignDetailSections [data-field]').forEach(el=>{const key=el.dataset.field,value=el.value.trim();if(['name','status','priority','location','worker','startDate','endDate'].includes(key)&&Object.prototype.hasOwnProperty.call(original,key)){original[key]=value;}else changes[key]=value;});details[selectedId]=changes;try{localStorage.setItem(localKey,JSON.stringify(details));localStorage.setItem('planner.case.base.v1',JSON.stringify({recruitData,assignData}));}catch(e){alert('ブラウザへの保存に失敗しました。ストレージ設定を確認してください。');return;}editing=false;renderDetail();alert('変更内容をこのブラウザに保存しました。');}
+function saveDetail(){const original=getRow(selectedId);if(!original)return;const changes={...(details[selectedId]||{})};document.querySelectorAll('#detailGrid [data-field],#assignDetailSections [data-field]').forEach(el=>{const key=el.dataset.field,value=el.value.trim();if(['name','status','priority','location','worker','startDate','endDate'].includes(key)&&Object.prototype.hasOwnProperty.call(original,key)){original[key]=value;}else changes[key]=value;});details[selectedId]=changes;try{localStorage.setItem(localKey,JSON.stringify(details));localStorage.setItem('planner.case.base.v1',JSON.stringify({recruitData,assignData}));}catch(e){alert('ブラウザへの保存に失敗しました。ストレージ設定を確認してください。');return;}try{const registered=JSON.parse(localStorage.getItem('planner.case.registered.v1')||'[]');if(Array.isArray(registered)){const ix=registered.findIndex(x=>x.id===selectedId);if(ix>=0){registered[ix]={...original,...changes};localStorage.setItem('planner.case.registered.v1',JSON.stringify(registered));}}}catch(e){console.warn('登録案件データへの反映失敗',e)}editing=false;renderDetail();alert('変更内容をこのブラウザに保存しました。');}
 function renderChat(){if(!selectedId)return;let list=[];try{list=JSON.parse(localStorage.getItem('planner.case.memo.'+selectedId)||'[]');}catch(e){}$('chatHistory').replaceChildren();list.forEach(x=>{const p=document.createElement('p');p.textContent=x;$('chatHistory').append(p);});if(!list.length)$('chatHistory').textContent='メモはまだありません。';}
 $('recruitTab').addEventListener('click',()=>setTab('recruit'));
 $('assignTab').addEventListener('click',()=>setTab('assign'));
@@ -114,7 +118,40 @@ $('docFile').addEventListener('change',()=>{$('docStatus').textContent=$('docFil
 $('chatBtn').addEventListener('click',()=>{$('chatPanel').hidden=!$('chatPanel').hidden;});
 $('chatAddBtn').addEventListener('click',()=>{const value=$('chatText').value.trim();if(!value)return;const key='planner.case.memo.'+selectedId;let list=[];try{list=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}list.push(new Date().toLocaleString('ja-JP')+'  '+value);try{localStorage.setItem(key,JSON.stringify(list));$('chatText').value='';renderChat();}catch(e){alert('メモを保存できませんでした。');}});
 try{const saved=JSON.parse(localStorage.getItem('planner.case.base.v1')||'null');if(saved?.recruitData?.length&&saved?.assignData?.length){saved.recruitData.forEach(x=>{const o=getRow(x.id);if(o)Object.assign(o,x);});saved.assignData.forEach(x=>{const o=getRow(x.id);if(o)Object.assign(o,x);});}}catch(e){console.warn('案件の保存値を読み込めません',e)}
-setTab('recruit');
+// 新規登録画面と共有する募集案件データを読み込みます。
+const registeredKey='planner.case.registered.v1';
+function syncRegisteredCases(){
+  try{
+    const items=JSON.parse(localStorage.getItem(registeredKey)||'[]');
+    if(!Array.isArray(items))return;
+    items.forEach(entry=>{
+      if(!entry||typeof entry.id!=='string'||!entry.id.startsWith('R'))return;
+      const existing=getRow(entry.id);
+      if(existing&&recruitData.includes(existing))Object.assign(existing,entry);
+      else if(!existing)recruitData.push(entry);
+    });
+  }catch(e){console.warn('新規登録案件を読み込めません',e)}
+}
+syncRegisteredCases();
+$('registerCaseBtn').addEventListener('click',()=>window.location.assign(new URL('case-registration.html',window.location.href).href));
+// 登録画面から戻ったときは登録した案件の詳細を表示します。
+const createdId=navParams.get('createdId');
+setTab(navParams.get('tab')==='assign'?'assign':'recruit');
+if(createdId&&recruitData.some(x=>x.id===createdId))openDetail(createdId);
+if(fromMembers){
+  const match=linkedProjectId&&getRow(linkedProjectId);
+  if(match){
+    setTab(assignData.some(x=>x.id===linkedProjectId)?'assign':'recruit');
+    openDetail(linkedProjectId);
+  }else{
+    setTab('assign');
+    const back=document.createElement('button');back.type='button';back.className='back-btn';back.textContent='所属ユーザー管理に戻る';back.addEventListener('click',()=>window.location.assign(new URL(memberPage,window.location.href).href));
+    const note=document.createElement('div');note.className='card';note.setAttribute('role','alert');note.style.borderLeft='4px solid #d97706';
+    const msg=document.createElement('p');msg.textContent='指定された案件ID「'+(linkedProjectId||'未指定')+'」は案件管理の一覧に存在しません。所属ユーザー管理の参画先案件IDを確認してください。';
+    note.append(msg,back);$('listView').prepend(note);
+  }
+}
 </script>
+<a id="dashboardHomeLink" href="dashboard.html" aria-label="ホームへ戻る" style="position:fixed;bottom:18px;left:18px;background:#1e3a8a;color:#fff;z-index:35;box-shadow:0 4px 15px #0b225044;border-radius:25px;padding:10px 16px;font-size:13px;font-weight:bold;text-decoration:none;font-family:Meiryo,sans-serif">⌂ ホームへ戻る</a><style>@media print{#dashboardHomeLink{display:none!important}}</style>
 </body>
 </html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planner CMS - 所属グループ管理</title>
+<style>
+:root{font-family:"Yu Gothic UI",Meiryo,system-ui,sans-serif;color:#253047;background:#f5f7fb;font-size:14px}*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;border-radius:7px;padding:9px 15px;font-weight:650}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}button:disabled{opacity:.5;cursor:not-allowed}.header{background:#1e3a8a;color:#fff;padding:17px 24px;font-size:21px;font-weight:700;min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:12px}.header small{font-size:12px;color:#dbeafe;font-weight:400}.container{max-width:1260px;margin:auto;padding:24px}.heading{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}.heading h1{font-size:24px;margin:0 0 5px}.muted{color:#64748b}.small{font-size:12px}.primary{background:#2563eb;color:#fff}.primary:hover{background:#1d4ed8}.secondary{background:#e5ecf6;color:#244a85}.secondary:hover{background:#d8e5f8}.danger{color:#b42336;background:#fff0f1}.outline{background:#fff;border:1px solid #cbd5e1;color:#334155}.card{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:19px;margin-bottom:17px;box-shadow:0 2px 8px #0000000a}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat .num{font-size:28px;font-weight:800;color:#1e3a8a;margin-top:7px}.stat .name{color:#64748b;font-size:12px}.search-row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:6px;min-width:190px;flex:1}.field label{font-weight:650;font-size:12px;color:#475569}.field input,.field textarea{padding:10px 12px;width:100%;border:1px solid #cbd5e1;border-radius:7px;color:#253047;background:#fff}.field textarea{resize:vertical;min-height:95px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:680px}th,td{text-align:left;padding:13px 14px;border-bottom:1px solid #e5e7eb}th{background:#f8fafc;font-size:12px;color:#64748b;white-space:nowrap}td{vertical-align:middle}tbody tr:hover{background:#eff6ff}.link{background:none;padding:0;color:#2563eb;text-decoration:underline;text-underline-offset:3px}.chip{display:inline-block;padding:4px 10px;border-radius:99px;background:#e9f1ff;color:#2453a1;font-weight:700;font-size:12px}.actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.smallbtn{padding:6px 10px;font-size:12px}.count{font-weight:750;font-variant-numeric:tabular-nums}.empty{text-align:center;padding:30px;color:#64748b}.foot{font-size:12px;color:#64748b;margin-top:12px}.dialog-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0b1b338a;z-index:10;padding:16px}.dialog-backdrop.open{display:flex}.dialog{background:white;border-radius:12px;padding:23px;width:min(520px,100%);box-shadow:0 18px 45px #0f172a40}.dialog h2{margin:0;font-size:20px}.dialog-head,.dialog-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}.dialog-actions{justify-content:flex-end;margin-top:20px}.formbody{display:grid;gap:15px;margin-top:20px}.required{color:#dc2626}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:12px 19px;border-radius:8px;display:none;z-index:20}.notice{border-left:3px solid #2563eb;padding:10px 12px;background:#eff6ff;font-size:12px;color:#315583;line-height:1.65;margin-top:14px}.back{background:#ffffff20;color:#fff;border:1px solid #ffffff55;font-size:12px;white-space:nowrap}.back:hover{background:#ffffff30}[hidden]{display:none!important}@media(max-width:700px){.container{padding:14px}.header{padding:15px;font-size:17px}.stats{grid-template-columns:1fr 1fr}.stats .card:last-child{grid-column:span 2}.heading h1{font-size:21px}.search-row{align-items:stretch}.field{min-width:100%}}
+.member-dialog{width:min(760px,100%);max-height:min(90vh,830px);overflow:auto}.member-choices{max-height:410px;overflow:auto;border:1px solid #e2e8f0;border-radius:9px}.member-choice{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #e2e8f0;cursor:pointer}.member-choice:hover{background:#eff6ff}.member-choice:last-child{border-bottom:0}.member-choice input{width:19px;height:19px;accent-color:#2563eb;flex:none}.member-choice .sub{color:#64748b;font-size:12px;margin-top:3px}.member-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.member-pill{border-radius:15px;background:#eff6ff;color:#1d4ed8;font-size:12px;padding:4px 9px}.member-empty{padding:22px;text-align:center;color:#64748b}
+</style>
+</head>
+<body>
+<header class="header"><span>Planner CMS - 所属グループ管理</span><button type="button" id="goMembers" class="back">所属ユーザー管理へ</button></header>
+<main class="container">
+<div class="heading"><div><h1>所属グループ一覧</h1><div class="muted small">所属グループの登録・編集・削除と所属ユーザーの割り当て</div></div><button class="primary" id="addBtn">＋ グループ新規登録</button></div>
+<section class="stats" id="stats" aria-label="グループ集計"></section>
+<section class="card"><div class="search-row"><div class="field"><label for="keyword">グループ名・説明で検索</label><input id="keyword" placeholder="例：GR1 / 営業部"></div><button class="secondary" id="resetBtn">条件クリア</button></div></section>
+<section class="card" style="padding:0;overflow:hidden"><div style="padding:18px 19px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong>グループ一覧 <span class="muted small" id="resultCount"></span></strong><span class="small muted">「所属ユーザー設定」から所属先を変更できます</span></div><div class="table-wrap"><table><thead><tr><th>グループコード</th><th>所属グループ名</th><th>説明</th><th>所属ユーザー数</th><th>操作</th></tr></thead><tbody id="rows"></tbody></table></div><div class="foot" style="padding:0 19px 16px">データはこのブラウザに保存されます。所属ユーザーがいるグループは削除できません。</div></section>
+<div class="notice">初期登録グループ：総務部・営業部・GR1・GR2・GR3・GR4・GR5。既存の所属ユーザー管理と同じブラウザ・同じ保存領域で利用すると人数が反映されます。グループ名変更・所属ユーザー設定は所属ユーザー管理の保存データにも反映します。</div>
+</main>
+<div class="dialog-backdrop" id="dialog" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog-head"><h2 id="dialogTitle">所属グループ登録</h2><button class="outline" type="button" id="closeBtn">✕</button></div><form id="groupForm"><div class="formbody"><div class="field"><label for="groupCode">グループコード <span class="required">*</span></label><input id="groupCode" required maxlength="20" placeholder="例：GR6"></div><div class="field"><label for="groupName">所属グループ名 <span class="required">*</span></label><input id="groupName" required maxlength="60" placeholder="例：開発部"></div><div class="field"><label for="groupDescription">説明</label><textarea id="groupDescription" maxlength="300" placeholder="グループの担当業務・役割など"></textarea></div></div><div class="dialog-actions"><button type="button" class="outline" id="cancelBtn">キャンセル</button><button type="submit" class="primary">保存する</button></div></form></div></div>
+
+<div class="dialog-backdrop" id="membersDialog" aria-hidden="true"><div class="dialog member-dialog" role="dialog" aria-modal="true" aria-labelledby="memberDialogTitle">
+  <div class="dialog-head"><div><h2 id="memberDialogTitle">所属ユーザー設定</h2><div class="muted small" id="memberDialogSummary"></div></div><button class="outline" type="button" id="closeMembers">✕</button></div>
+  <p class="small muted">チェックしたユーザーをこのグループに所属させます。チェックを外すと未所属になります。別グループから移動する場合は、保存時に所属先が切り替わります。</p>
+  <div class="field" style="margin:14px 0"><label for="memberKeyword">ユーザーを検索（氏名・ID・現在の所属）</label><input id="memberKeyword" placeholder="ユーザー名で絞り込み"></div>
+  <div class="member-toolbar"><span id="memberSelectionCount" class="small muted"></span><div class="actions"><button id="selectVisible" type="button" class="secondary smallbtn">表示中を選択</button><button id="clearVisible" type="button" class="secondary smallbtn">表示中を解除</button></div></div>
+  <div id="memberChoices" class="member-choices"></div>
+  <div class="dialog-actions"><button class="outline" id="cancelMembers" type="button">キャンセル</button><button class="primary" id="saveMembers" type="button">所属設定を保存</button></div>
+</div></div>
+<div id="toast" class="toast" role="status"></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const GROUP_KEY='planner.member.groups.v1';
+const USER_KEY='memberManagementStandalone_v1';
+const DEFAULT_GROUPS=[
+{code:'GA',name:'総務部',description:'総務・人事・社内管理業務'},
+{code:'SA',name:'営業部',description:'営業活動・案件提案・顧客対応'},
+{code:'GR1',name:'GR1',description:'グループ1'},
+{code:'GR2',name:'GR2',description:'グループ2'},
+{code:'GR3',name:'GR3',description:'グループ3'},
+{code:'GR4',name:'GR4',description:'グループ4'},
+{code:'GR5',name:'GR5',description:'グループ5'}];
+const DEMO_USERS=[
+{id:'U001',name:'山田 太郎',group:'GR1',office:'東京',projectId:'A001',project:'ECサイト開発',status:'参画中',level:2,join:'2023-04-01',leave:'',preferences:'C# / ASP.NET、東京、リモート週2日希望',docs:[]},
+{id:'U002',name:'佐藤 花子',group:'GR2',office:'札幌',projectId:'',project:'',status:'募集中',level:2,join:'2024-06-01',leave:'',preferences:'AWS、クラウド構築、フルリモート希望',docs:[]},
+{id:'U003',name:'鈴木 一郎',group:'GR3',office:'大阪',projectId:'A003',project:'基幹刷新',status:'退場予定・参画先未決定',level:3,join:'2020-10-01',leave:'',preferences:'Java、設計工程、関西圏',docs:[]},
+{id:'U004',name:'高橋 美咲',group:'営業部',office:'福岡',projectId:'',project:'',status:'募集中',level:4,join:'2022-01-15',leave:'',preferences:'',docs:[]},
+{id:'U005',name:'田中 健',group:'GR1',office:'東京',projectId:'A002',project:'自治体DX',status:'退場予定・参画先決定',level:2,join:'2025-04-01',leave:'',preferences:'React、TypeScript、フロントエンド',docs:[]},
+{id:'U006',name:'伊藤 直子',group:'GR3',office:'大阪',projectId:'',project:'',status:'退職',level:2,join:'2021-04-01',leave:'2026-10-31',preferences:'',docs:[]}
+];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function readJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
+let groups=readJSON(GROUP_KEY);if(!Array.isArray(groups))groups=structuredClone(DEFAULT_GROUPS);
+let editingCode=null,memberGroupCode=null,selectedMemberIds=new Set();
+function members(){const u=readJSON(USER_KEY);return Array.isArray(u)?u:DEMO_USERS;}
+function persistMembers(list){try{localStorage.setItem(USER_KEY,JSON.stringify(list));return true}catch(e){console.error(e);alert('所属ユーザーの保存に失敗しました。ブラウザの保存領域を確認してください。');return false}}
+
+function countOf(name){return members().filter(u=>u.group===name).length;}
+function toast(message){$('toast').textContent=message;$('toast').style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').style.display='none',3000)}
+function persist(){try{localStorage.setItem(GROUP_KEY,JSON.stringify(groups));return true}catch(e){console.error(e);alert('グループデータを保存できませんでした');return false}}
+function render(){const keyword=$('keyword').value.trim().toLocaleLowerCase('ja');const filtered=groups.filter(g=>[g.code,g.name,g.description].some(v=>String(v||'').toLocaleLowerCase('ja').includes(keyword)));const assigned=groups.reduce((n,g)=>n+countOf(g.name),0);$('stats').innerHTML=`<div class="card stat"><div class="name">登録グループ数</div><div class="num">${groups.length}<span class="muted small"> グループ</span></div></div><div class="card stat"><div class="name">所属ユーザー数</div><div class="num">${assigned}<span class="muted small"> 名</span></div></div><div class="card stat"><div class="name">ユーザー所属グループ数</div><div class="num">${groups.filter(g=>countOf(g.name)>0).length}<span class="muted small"> グループ</span></div></div>`;$('resultCount').textContent=`（${filtered.length}件）`;$('rows').innerHTML=filtered.length?filtered.map(g=>`<tr><td><span class="chip">${esc(g.code)}</span></td><td><button class="link" data-edit="${esc(g.code)}">${esc(g.name)}</button></td><td>${esc(g.description)||'—'}</td><td><span class="count">${countOf(g.name)}</span> 名</td><td><div class="actions"><button type="button" class="primary smallbtn" data-members="${esc(g.code)}">所属ユーザー設定</button><button type="button" class="secondary smallbtn" data-edit="${esc(g.code)}">編集</button><button type="button" class="danger smallbtn" data-delete="${esc(g.code)}">削除</button></div></td></tr>`).join(''):'<tr><td colspan="5" class="empty">該当するグループはありません</td></tr>'}
+function openDialog(code=null){editingCode=code;const g=groups.find(x=>x.code===code);$('dialogTitle').textContent=g?'所属グループ編集':'所属グループ新規登録';$('groupCode').value=g?.code||'';$('groupName').value=g?.name||'';$('groupDescription').value=g?.description||'';$('dialog').classList.add('open');$('dialog').setAttribute('aria-hidden','false');$('groupCode').focus()}
+function closeDialog(){$('dialog').classList.remove('open');$('dialog').setAttribute('aria-hidden','true')}
+function memberSelectionText(){const g=groups.find(x=>x.code===memberGroupCode);$('memberSelectionCount').textContent=`選択中：${selectedMemberIds.size}名 ／ 対象グループ：${g?.name||''}`;}
+function renderMemberChoices(){
+ const keyword=$('memberKeyword').value.trim().toLocaleLowerCase('ja');
+ const filtered=members().filter(u=>[u.id,u.name,u.group].some(v=>String(v||'').toLocaleLowerCase('ja').includes(keyword)));
+ $('memberChoices').replaceChildren();
+ if(!filtered.length){const el=document.createElement('div');el.className='member-empty';el.textContent='該当するユーザーがありません';$('memberChoices').append(el);}
+ for(const u of filtered){const label=document.createElement('label');label.className='member-choice';const cb=document.createElement('input');cb.type='checkbox';cb.value=u.id;cb.checked=selectedMemberIds.has(u.id);cb.addEventListener('change',()=>{if(cb.checked)selectedMemberIds.add(u.id);else selectedMemberIds.delete(u.id);memberSelectionText()});const info=document.createElement('div');const name=document.createElement('strong');name.textContent=u.name||u.id;const sub=document.createElement('div');sub.className='sub';sub.textContent=`ID：${u.id} ／ 事業所：${u.office||'未登録'} ／ 現在：${u.group||'未所属'}`;info.append(name,sub);label.append(cb,info);$('memberChoices').append(label);}
+ memberSelectionText();
+}
+function openMemberDialog(code){const g=groups.find(x=>x.code===code);if(!g)return;memberGroupCode=code;selectedMemberIds=new Set(members().filter(u=>u.group===g.name).map(u=>u.id));$('memberDialogTitle').textContent=g.name+'｜所属ユーザー設定';$('memberDialogSummary').textContent='グループコード：'+g.code;$('memberKeyword').value='';renderMemberChoices();$('membersDialog').classList.add('open');$('membersDialog').setAttribute('aria-hidden','false');$('memberKeyword').focus();}
+function closeMemberDialog(){$('membersDialog').classList.remove('open');$('membersDialog').setAttribute('aria-hidden','true');memberGroupCode=null;}
+$('closeMembers').onclick=closeMemberDialog;$('cancelMembers').onclick=closeMemberDialog;
+$('membersDialog').addEventListener('click',e=>{if(e.target===$('membersDialog'))closeMemberDialog()});
+$('memberKeyword').addEventListener('input',renderMemberChoices);
+for(const [buttonId,checked] of [['selectVisible',true],['clearVisible',false]])$(buttonId).onclick=()=>{const keyword=$('memberKeyword').value.trim().toLocaleLowerCase('ja');for(const u of members().filter(u=>[u.id,u.name,u.group].some(v=>String(v||'').toLocaleLowerCase('ja').includes(keyword)))){if(checked)selectedMemberIds.add(u.id);else selectedMemberIds.delete(u.id)}renderMemberChoices()};
+$('saveMembers').onclick=()=>{
+ const g=groups.find(x=>x.code===memberGroupCode);if(!g)return;
+ const list=members().map(u=>({...u}));
+ const moves=list.filter(u=>selectedMemberIds.has(u.id)&&u.group&&u.group!==g.name);
+ if(moves.length&&!confirm(`${moves.length}名が他のグループから「${g.name}」に移動します。よろしいですか？`))return;
+ let changed=0;
+ for(const u of list){const next=selectedMemberIds.has(u.id)?g.name:u.group===g.name?'':u.group;if(u.group!==next){u.group=next;changed++}}
+ if(!persistMembers(list))return;
+ closeMemberDialog();render();toast(`${changed}名の所属情報を更新しました`);
+};
+
+$('addBtn').onclick=()=>openDialog();$('closeBtn').onclick=closeDialog;$('cancelBtn').onclick=closeDialog;$('dialog').addEventListener('click',e=>{if(e.target===$('dialog'))closeDialog()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDialog();closeMemberDialog()}});$('keyword').addEventListener('input',render);$('resetBtn').onclick=()=>{$('keyword').value='';render()};$('goMembers').onclick=()=>{window.location.href='member-management.html'};
+$('groupForm').addEventListener('submit',e=>{e.preventDefault();const code=$('groupCode').value.trim(),name=$('groupName').value.trim(),description=$('groupDescription').value.trim();if(!code||!name)return;if(groups.some(g=>g.code===code&&g.code!==editingCode)){alert('同じグループコードが既に登録されています');return}if(groups.some(g=>g.name===name&&g.code!==editingCode)){alert('同じグループ名が既に登録されています');return}if(editingCode){const g=groups.find(x=>x.code===editingCode);if(!g)return;const oldName=g.name;const u=readJSON(USER_KEY);if(oldName!==name&&Array.isArray(u)&&u.some(x=>x.group===oldName)){if(!confirm(`「${oldName}」に所属するユーザーの所属グループも「${name}」に変更しますか？`))return;const changed=u.map(x=>x.group===oldName?{...x,group:name}:x);try{localStorage.setItem(USER_KEY,JSON.stringify(changed))}catch{alert('所属ユーザーの更新に失敗したため中止しました');return}}Object.assign(g,{code,name,description})}else{groups.push({code,name,description})}if(persist()){closeDialog();render();toast('所属グループを保存しました')}});
+$('rows').addEventListener('click',e=>{const b=e.target.closest('[data-members],[data-edit],[data-delete]');if(!b)return;if(b.dataset.members!==undefined){openMemberDialog(b.dataset.members);return}if(b.dataset.edit!==undefined){openDialog(b.dataset.edit);return}const code=b.dataset.delete;const g=groups.find(x=>x.code===code);if(!g)return;const count=countOf(g.name);if(count){alert(`「${g.name}」には${count}名所属しています。ユーザーの所属先を変更してから削除してください。`);return}if(!confirm(`「${g.name}」を削除しますか？`))return;groups=groups.filter(x=>x.code!==code);if(persist()){render();toast('グループを削除しました')}});
+render();
+})();
+</script>
+<a id="dashboardHomeLink" href="dashboard.html" aria-label=""ホームへ戻る"" style="position:fixed;bottom:18px;left:18px;background:#1e3a8a;color:#fff;z-index:35;box-shadow:0 4px 15px #0b225044;border-radius:25px;padding:10px 16px;font-size:13px;font-weight:bold;text-decoration:none;font-family:Meiryo,sans-serif">⌂ ホームへ戻る</a><style>@media print{#dashboardHomeLink{display:none!important}}</style>
+</body></html>
